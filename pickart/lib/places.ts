@@ -1,3 +1,8 @@
+import { db } from "./db"
+import { places } from "./db/schema"
+import { eq } from "drizzle-orm"
+import { getArtPieceById } from "./art"
+
 // Mock data for places (hotels, apartments, etc.)
 export type Place = {
   id: string
@@ -8,10 +13,12 @@ export type Place = {
   description: string
   artPieceId: string | null // ID of the assigned art piece, null if none
   image: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 // Mock places data
-const places: Place[] = [
+const placesData: Place[] = [
   {
     id: "1",
     slug: "grand-hotel",
@@ -21,6 +28,8 @@ const places: Place[] = [
     description: "A luxury hotel in the heart of Manhattan featuring curated art in every room.",
     artPieceId: "1", // Assigned to "Sunset Horizon"
     image: "/placeholder.svg?height=600&width=800&text=Grand+Hotel",
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: "2",
@@ -31,6 +40,8 @@ const places: Place[] = [
     description: "Modern apartments with stunning views of the Chicago skyline.",
     artPieceId: "3", // Assigned to "Serene Forest"
     image: "/placeholder.svg?height=600&width=800&text=Skyline+Apartments",
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: "3",
@@ -41,6 +52,8 @@ const places: Place[] = [
     description: "A contemporary art gallery showcasing local and international artists.",
     artPieceId: "2", // Assigned to "Urban Rhythm"
     image: "/placeholder.svg?height=600&width=800&text=Riverside+Gallery",
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: "4",
@@ -51,6 +64,8 @@ const places: Place[] = [
     description: "A beachfront resort with art-inspired interiors and ocean views.",
     artPieceId: null, // No art piece assigned yet
     image: "/placeholder.svg?height=600&width=800&text=Ocean+View+Resort",
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: "5",
@@ -61,101 +76,41 @@ const places: Place[] = [
     description: "Modern office spaces for tech startups with art installations.",
     artPieceId: "5", // Assigned to "Whispers of the Sea"
     image: "/placeholder.svg?height=600&width=800&text=Tech+Hub+Offices",
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
 ]
 
 // Get all places
 export async function getAllPlaces(): Promise<Place[]> {
-  // Simulate database query delay
-  await new Promise((resolve) => setTimeout(resolve, 100))
-
-  // SUPABASE IMPLEMENTATION:
-  // const { data, error } = await supabase
-  //   .from('places')
-  //   .select('*')
-  //
-  // if (error) {
-  //   console.error('Error fetching places:', error)
-  //   return []
-  // }
-  //
-  // return data
-
-  return [...places] // Return a copy of the array
+  const result = await db.select().from(places)
+  return result
 }
 
 // Get a place by slug
 export async function getPlaceBySlug(slug: string): Promise<Place | null> {
-  // Simulate database query delay
-  await new Promise((resolve) => setTimeout(resolve, 100))
-
-  // SUPABASE IMPLEMENTATION:
-  // const { data, error } = await supabase
-  //   .from('places')
-  //   .select('*')
-  //   .eq('slug', slug)
-  //   .single()
-  //
-  // if (error) {
-  //   console.error(`Error fetching place with slug ${slug}:`, error)
-  //   return null
-  // }
-  //
-  // return data
-
-  return places.find((place) => place.slug === slug) || null
+  const result = await db.select().from(places).where(eq(places.slug, slug))
+  return result[0] || null
 }
 
 // Assign an art piece to a place
 export async function assignArtPieceToPlace(placeId: string, artPieceId: string | null): Promise<Place | null> {
-  // SUPABASE IMPLEMENTATION:
-  // const { data, error } = await supabase
-  //   .from('places')
-  //   .update({ artPieceId })
-  //   .eq('id', placeId)
-  //   .select()
-  //   .single()
-  //
-  // if (error) {
-  //   console.error(`Error assigning art piece to place with ID ${placeId}:`, error)
-  //   throw new Error(`Failed to assign art piece: ${error.message}`)
-  // }
-  //
-  // return data
-
-  // Mock implementation
-  const place = places.find((p) => p.id === placeId)
-  if (!place) {
+  const result = await db
+    .update(places)
+    .set({ artPieceId, updatedAt: new Date() })
+    .where(eq(places.id, placeId))
+    .returning()
+  
+  if (!result[0]) {
     throw new Error(`Place with ID ${placeId} not found`)
   }
 
-  place.artPieceId = artPieceId
-  return place
+  return result[0]
 }
 
 // Get all places with their assigned art pieces
 export async function getPlacesWithArtPieces() {
   const allPlaces = await getAllPlaces()
-
-  // SUPABASE IMPLEMENTATION:
-  // const { data, error } = await supabase
-  //   .from('places')
-  //   .select(`
-  //     *,
-  //     art_pieces:artPieceId (
-  //       id, title, artist, images
-  //     )
-  //   `)
-  //
-  // if (error) {
-  //   console.error('Error fetching places with art pieces:', error)
-  //   return []
-  // }
-  //
-  // return data
-
-  // For our mock implementation, we'll manually join the data
-  const { getArtPieceById } = await import("./art")
 
   // Use Promise.all to fetch all art pieces in parallel
   const placesWithArt = await Promise.all(

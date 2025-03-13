@@ -9,8 +9,12 @@
 // const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 // const supabase = createClient(supabaseUrl, supabaseKey)
 
+import { db } from "./db"
+import { artPieces } from "./db/schema"
+import { eq } from "drizzle-orm"
+
 // Mock art pieces data
-const artPieces = [
+const mockArtPieces = [
   {
     id: "1",
     title: "Sunset Horizon",
@@ -118,114 +122,47 @@ const artPieces = [
 
 // Get all published art pieces
 export async function getPublishedArtPieces() {
-  // Simulate database query delay
-  await new Promise((resolve) => setTimeout(resolve, 100))
-
-  // SUPABASE IMPLEMENTATION:
-  // const { data, error } = await supabase
-  //   .from('art_pieces')
-  //   .select('*')
-  //   .eq('published', true)
-  //
-  // if (error) {
-  //   console.error('Error fetching art pieces:', error)
-  //   return []
-  // }
-  //
-  // return data
-
-  return artPieces.filter((art) => art.published)
+  const result = await db.select().from(artPieces).where(eq(artPieces.published, true))
+  return result
 }
 
 // Get all art pieces (for admin)
 export async function getAllArtPieces() {
-  // Simulate database query delay
-  await new Promise((resolve) => setTimeout(resolve, 100))
-
-  // SUPABASE IMPLEMENTATION:
-  // const { data, error } = await supabase
-  //   .from('art_pieces')
-  //   .select('*')
-  //
-  // if (error) {
-  //   console.error('Error fetching all art pieces:', error)
-  //   return []
-  // }
-  //
-  // return data
-
-  return [...artPieces] // Return a copy of the array
+  const result = await db.select().from(artPieces)
+  return result
 }
 
 // Get all published art piece IDs for static generation
 export async function getPublishedArtPieceIds() {
-  // SUPABASE IMPLEMENTATION:
-  // const { data, error } = await supabase
-  //   .from('art_pieces')
-  //   .select('id')
-  //   .eq('published', true)
-  //
-  // if (error) {
-  //   console.error('Error fetching art piece IDs:', error)
-  //   return []
-  // }
-  //
-  // return data.map(item => item.id)
-
-  const pieces = await getPublishedArtPieces()
-  return pieces.map((piece) => piece.id)
+  const result = await db
+    .select({ id: artPieces.id })
+    .from(artPieces)
+    .where(eq(artPieces.published, true))
+  return result.map((item) => item.id)
 }
 
 // Get a specific art piece by ID
-export async function getArtPieceById(id) {
-  // Simulate database query delay
-  await new Promise((resolve) => setTimeout(resolve, 100))
-
-  // SUPABASE IMPLEMENTATION:
-  // const { data, error } = await supabase
-  //   .from('art_pieces')
-  //   .select('*')
-  //   .eq('id', id)
-  //   .single()
-  //
-  // if (error) {
-  //   console.error(`Error fetching art piece with ID ${id}:`, error)
-  //   return null
-  // }
-  //
-  // return data
-
-  return artPieces.find((art) => art.id === id)
+export async function getArtPieceById(id: string) {
+  const result = await db.select().from(artPieces).where(eq(artPieces.id, id))
+  return result[0] || null
 }
 
 // Update art piece status (publish/unpublish)
-export async function updateArtPieceStatus(id, published) {
-  // SUPABASE IMPLEMENTATION:
-  // const { data, error } = await supabase
-  //   .from('art_pieces')
-  //   .update({ published })
-  //   .eq('id', id)
-  //   .select()
-  //   .single()
-  //
-  // if (error) {
-  //   console.error(`Error updating art piece status with ID ${id}:`, error)
-  //   throw new Error(`Failed to update art piece status: ${error.message}`)
-  // }
-  //
-  // // After successful update, trigger revalidation
-  // await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/revalidate?token=${process.env.REVALIDATION_TOKEN}&path=/art/${id}`)
-  // await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/revalidate?token=${process.env.REVALIDATION_TOKEN}&path=/art`)
-  //
-  // return data
-
-  // Mock implementation
-  const artPiece = artPieces.find((art) => art.id === id)
-  if (!artPiece) {
+export async function updateArtPieceStatus(id: string, published: boolean) {
+  const result = await db
+    .update(artPieces)
+    .set({ published, updatedAt: new Date() })
+    .where(eq(artPieces.id, id))
+    .returning()
+  
+  if (!result[0]) {
     throw new Error(`Art piece with ID ${id} not found`)
   }
 
-  artPiece.published = published
-  return artPiece
+  // Trigger revalidation
+  await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/revalidate?token=${process.env.REVALIDATION_TOKEN}&path=/art/${id}`)
+  await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/revalidate?token=${process.env.REVALIDATION_TOKEN}&path=/art`)
+
+  return result[0]
 }
 
