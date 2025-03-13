@@ -160,8 +160,8 @@ export async function updateArtPieceStatus(id: string, published: boolean) {
   }
 
   // Trigger revalidation
-  await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/revalidate?token=${process.env.REVALIDATION_TOKEN}&path=/art/${id}`)
-  await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/revalidate?token=${process.env.REVALIDATION_TOKEN}&path=/art`)
+  await fetch(`${process.env.VERCEL_BRANCH_URL}/api/revalidate?token=${process.env.REVALIDATION_TOKEN}&path=/art/${id}`)
+  await fetch(`${process.env.VERCEL_BRANCH_URL}/api/revalidate?token=${process.env.REVALIDATION_TOKEN}&path=/art`)
 
   return result[0]
 }
