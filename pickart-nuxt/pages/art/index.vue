@@ -7,11 +7,12 @@ definePageMeta({
 });
 
 const { getArtPieces } = useSupabase();
-const artPieces = ref<ArtPiece[]>([]);
 
 // Fetch art pieces at build time
-const { data } = await useAsyncData("art-pieces", () => getArtPieces());
-artPieces.value = data.value || [];
+const { data: artPieces } = await useAsyncData("art-pieces", async () => {
+  const pieces = await getArtPieces();
+  return pieces || [];
+});
 </script>
 
 <template>
@@ -24,7 +25,7 @@ artPieces.value = data.value || [];
         class="bg-white rounded-lg shadow-md overflow-hidden"
       >
         <NuxtImg
-          :src="piece.images[0]"
+          :src="piece.images?.[0] || '/images/placeholder.jpg'"
           :alt="piece.title"
           class="w-full h-64 object-cover"
         />

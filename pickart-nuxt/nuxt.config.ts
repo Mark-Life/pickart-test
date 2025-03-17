@@ -11,7 +11,12 @@ export default defineNuxtConfig({
 
   nitro: {
     prerender: {
-      routes: ['/art', '/places']
+      routes: ['/art', '/places'],
+      crawlLinks: true,
+      failOnError: false
+    },
+    routeRules: {
+      '/**': { cors: true }
     }
   },
 

@@ -7,11 +7,12 @@ definePageMeta({
 });
 
 const { getPlaces } = useSupabase();
-const places = ref<Place[]>([]);
 
 // Fetch places at build time
-const { data } = await useAsyncData("places", () => getPlaces());
-places.value = data.value || [];
+const { data: places } = await useAsyncData("places", async () => {
+  const placesData = await getPlaces();
+  return placesData || [];
+});
 </script>
 
 <template>
@@ -24,7 +25,7 @@ places.value = data.value || [];
         class="bg-white rounded-lg shadow-md overflow-hidden"
       >
         <NuxtImg
-          :src="place.image"
+          :src="place.image || '/images/placeholder.jpg'"
           :alt="place.name"
           class="w-full h-64 object-cover"
         />
