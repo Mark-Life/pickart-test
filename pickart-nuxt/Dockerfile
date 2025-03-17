@@ -16,6 +16,10 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Build the application
+ARG SUPABASE_URL
+ARG SUPABASE_KEY
+ENV SUPABASE_URL=${SUPABASE_URL}
+ENV SUPABASE_KEY=${SUPABASE_KEY}
 RUN pnpm build
 
 # Production stage
@@ -28,8 +32,9 @@ RUN corepack enable && corepack prepare pnpm@latest --activate && \
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files and add start script
 COPY package.json pnpm-lock.yaml ./
+RUN sed -i '/"scripts": {/a \    "start": "node .output/server/index.mjs",' package.json
 
 # Install production dependencies only
 RUN pnpm install --prod --frozen-lockfile
@@ -49,5 +54,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Expose the port
 EXPOSE 8080
 
-# Start the application
-CMD ["node", ".output/server/index.mjs"] 
+# Start the application with environment variables
+CMD ["pnpm", "start"] 

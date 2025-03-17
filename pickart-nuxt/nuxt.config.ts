@@ -20,12 +20,25 @@ export default defineNuxtConfig({
     }
   },
 
+  // Supabase module configuration
+  supabase: {
+    redirect: false,
+    redirectOptions: {
+      login: '/login',
+      callback: '/confirm',
+      exclude: ['/*'],
+    },
+  },
+
   runtimeConfig: {
+    // Private keys that are exposed to the server
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseKey: process.env.SUPABASE_KEY,
+    // Keys within public are also exposed to the client
     public: {
       supabase: {
-        url: process.env.SUPABASE_URL || '',
-        key: process.env.SUPABASE_KEY || '',
-        redirect: false,
+        url: process.env.SUPABASE_URL,
+        key: process.env.SUPABASE_KEY,
       }
     }
   },
@@ -52,6 +65,9 @@ export default defineNuxtConfig({
       ]
     }
   },
+
+  // SSR configuration
+  ssr: true,
 
   compatibilityDate: '2025-03-17'
 })
