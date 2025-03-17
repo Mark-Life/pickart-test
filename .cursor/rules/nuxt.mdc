@@ -1,0 +1,21 @@
+---
+description: tech stack for nuxt project
+globs: 
+alwaysApply: false
+---
+Nuxt vue.js project is located in /pickart-nuxt folder
+
+## Tech Stak
+
+- Vue.js
+- Nuxt:
+ - Static Site Generation with Revalidation (ISR), defult revalidation time – 1 week
+- Typecsript
+- Pinia: Vue.js state management
+- Supabase: db used as the serivce, auth, Storage (CDN)
+- Drizzle: db orm
+- Tailwind
+- [Shadcn/vue](mdc:https:/www.shadcn-vue.com): Unstyled UI components
+- Nuxt Image: Image optimization
+- Vue Motion: Animation library
+- Hosting: Google Cloud Run
