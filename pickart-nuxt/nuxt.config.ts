@@ -23,9 +23,21 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       supabase: {
-        url: process.env.SUPABASE_URL,
-        key: process.env.SUPABASE_KEY,
+        url: process.env.SUPABASE_URL || '',
+        key: process.env.SUPABASE_KEY || '',
         redirect: false,
+      }
+    }
+  },
+
+  // Add app hooks to validate environment variables
+  hooks: {
+    'app:created': () => {
+      const { url, key } = useRuntimeConfig().public.supabase
+      if (!url || !key) {
+        throw new Error(
+          'Supabase environment variables are missing. Please set SUPABASE_URL and SUPABASE_KEY in your environment.'
+        )
       }
     }
   },
