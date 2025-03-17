@@ -18,4 +18,4 @@ Nuxt vue.js project is located in /pickart-nuxt folder
 - [Shadcn/vue](mdc:https:/www.shadcn-vue.com): Unstyled UI components
 - Nuxt Image: Image optimization
 - Vue Motion: Animation library
-- Hosting: Google Cloud Run
+- Hosting: Firebase
