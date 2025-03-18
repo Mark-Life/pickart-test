@@ -1,90 +1,28 @@
 {
-  "id": "fda11a7f-c653-4a6d-9182-1ed7c46bc42b",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.art_pieces": {
-      "name": "art_pieces",
+    "public.countries": {
+      "name": "countries",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
+        "code": {
+          "name": "code",
+          "type": "char(2)",
           "primaryKey": true,
           "notNull": true
         },
-        "title": {
-          "name": "title",
+        "name": {
+          "name": "name",
           "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "artist": {
-          "name": "artist",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "year": {
-          "name": "year",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "price": {
-          "name": "price",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dimensions": {
-          "name": "dimensions",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "medium": {
-          "name": "medium",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "style": {
-          "name": "style",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "published": {
-          "name": "published",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "images": {
-          "name": "images",
-          "type": "text[]",
           "primaryKey": false,
           "notNull": true
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -94,72 +32,105 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
       "checkConstraints": {},
+      "policies": {},
       "isRLSEnabled": false
     },
-    "public.places": {
-      "name": "places",
+    "public.property_types": {
+      "name": "property_types",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "name": {
           "name": "name",
           "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "location": {
-          "name": "location",
-          "type": "text",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true
         },
         "description": {
           "name": "description",
           "type": "text",
           "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
           "notNull": true
         },
-        "art_piece_id": {
-          "name": "art_piece_id",
+        "first_name": {
+          "name": "first_name",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_name": {
+          "name": "last_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "country_code": {
+          "name": "country_code",
+          "type": "char(2)",
           "primaryKey": false,
           "notNull": false
         },
-        "image": {
-          "name": "image",
-          "type": "text",
+        "role": {
+          "name": "role",
+          "type": "user_role",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
@@ -167,12 +138,27 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "places_art_piece_id_art_pieces_id_fk": {
-          "name": "places_art_piece_id_art_pieces_id_fk",
-          "tableFrom": "places",
-          "tableTo": "art_pieces",
+        "users_country_code_fkey": {
+          "name": "users_country_code_fkey",
+          "tableFrom": "users",
+          "tableTo": "countries",
+          "schemaTo": "public",
           "columnsFrom": [
-            "art_piece_id"
+            "country_code"
+          ],
+          "columnsTo": [
+            "code"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "users_id_fkey": {
+          "name": "users_id_fkey",
+          "tableFrom": "users",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": [
+            "id"
           ],
           "columnsTo": [
             "id"
@@ -183,28 +169,1795 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "places_slug_unique": {
-          "name": "places_slug_unique",
-          "nullsNotDistinct": false,
+        "users_email_key": {
           "columns": [
-            "slug"
+            "email"
+          ],
+          "nullsNotDistinct": false,
+          "name": "users_email_key"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {
+        "admin_all": {
+          "name": "admin_all",
+          "as": "PERMISSIVE",
+          "for": "ALL",
+          "to": [
+            "authenticated"
+          ],
+          "using": "(EXISTS ( SELECT 1\n   FROM users users_1\n  WHERE ((users_1.id = auth.uid()) AND (users_1.role = 'admin'::user_role))))"
+        },
+        "user_select_own": {
+          "name": "user_select_own",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "public"
+          ]
+        },
+        "user_update_own": {
+          "name": "user_update_own",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "public"
           ]
         }
       },
-      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.artists": {
+      "name": "artists",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "artist_type": {
+          "name": "artist_type",
+          "type": "artist_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bank_account_id": {
+          "name": "bank_account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_signed": {
+          "name": "contract_signed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "artists_bank_account_id_fkey": {
+          "name": "artists_bank_account_id_fkey",
+          "tableFrom": "artists",
+          "tableTo": "bank_accounts",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "bank_account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "artists_id_fkey": {
+          "name": "artists_id_fkey",
+          "tableFrom": "artists",
+          "tableTo": "users",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.hosts": {
+      "name": "hosts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "host_type": {
+          "name": "host_type",
+          "type": "host_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "business_name": {
+          "name": "business_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bank_account_id": {
+          "name": "bank_account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contract_signed": {
+          "name": "contract_signed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "hosts_bank_account_id_fkey": {
+          "name": "hosts_bank_account_id_fkey",
+          "tableFrom": "hosts",
+          "tableTo": "bank_accounts",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "bank_account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "hosts_id_fkey": {
+          "name": "hosts_id_fkey",
+          "tableFrom": "hosts",
+          "tableTo": "users",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.bank_accounts": {
+      "name": "bank_accounts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuid_generate_v4()"
+        },
+        "account_name": {
+          "name": "account_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_address": {
+          "name": "account_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_number": {
+          "name": "account_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "country_code": {
+          "name": "country_code",
+          "type": "char(2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "bank_accounts_country_code_fkey": {
+          "name": "bank_accounts_country_code_fkey",
+          "tableFrom": "bank_accounts",
+          "tableTo": "countries",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "country_code"
+          ],
+          "columnsTo": [
+            "code"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {
+        "bank_account_select": {
+          "name": "bank_account_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "public"
+          ],
+          "using": "((EXISTS ( SELECT 1\n   FROM artists a\n  WHERE ((a.bank_account_id = bank_accounts.id) AND (a.id = auth.uid())))) OR (EXISTS ( SELECT 1\n   FROM hosts h\n  WHERE ((h.bank_account_id = bank_accounts.id) AND (h.id = auth.uid())))) OR (EXISTS ( SELECT 1\n   FROM users\n  WHERE ((users.id = auth.uid()) AND (users.role = 'admin'::user_role)))))"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.properties": {
+      "name": "properties",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuid_generate_v4()"
+        },
+        "property_id": {
+          "name": "property_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "property_name": {
+          "name": "property_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "street_address": {
+          "name": "street_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "city": {
+          "name": "city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "postcode": {
+          "name": "postcode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "country_code": {
+          "name": "country_code",
+          "type": "char(2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "property_type": {
+          "name": "property_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "size_sqm": {
+          "name": "size_sqm",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_floors": {
+          "name": "total_floors",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_rooms": {
+          "name": "total_rooms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contact_phone": {
+          "name": "contact_phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "properties_country_code_fkey": {
+          "name": "properties_country_code_fkey",
+          "tableFrom": "properties",
+          "tableTo": "countries",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "country_code"
+          ],
+          "columnsTo": [
+            "code"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "properties_owner_id_fkey": {
+          "name": "properties_owner_id_fkey",
+          "tableFrom": "properties",
+          "tableTo": "hosts",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "owner_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "properties_property_type_fkey": {
+          "name": "properties_property_type_fkey",
+          "tableFrom": "properties",
+          "tableTo": "property_types",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "property_type"
+          ],
+          "columnsTo": [
+            "name"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "properties_property_id_key": {
+          "columns": [
+            "property_id"
+          ],
+          "nullsNotDistinct": false,
+          "name": "properties_property_id_key"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {
+        "host_property_select": {
+          "name": "host_property_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "public"
+          ],
+          "using": "((owner_id = auth.uid()) OR (EXISTS ( SELECT 1\n   FROM property_admins\n  WHERE ((property_admins.property_id = properties.id) AND (property_admins.user_id = auth.uid())))) OR (EXISTS ( SELECT 1\n   FROM users\n  WHERE ((users.id = auth.uid()) AND (users.role = 'admin'::user_role)))))"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.property_photos": {
+      "name": "property_photos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuid_generate_v4()"
+        },
+        "property_id": {
+          "name": "property_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storage_path": {
+          "name": "storage_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "folder_path": {
+          "name": "folder_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'properties'"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "property_photos_property_id_fkey": {
+          "name": "property_photos_property_id_fkey",
+          "tableFrom": "property_photos",
+          "tableTo": "properties",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "property_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.spots": {
+      "name": "spots",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuid_generate_v4()"
+        },
+        "spot_id": {
+          "name": "spot_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "property_id": {
+          "name": "property_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "floor_number": {
+          "name": "floor_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "room_name": {
+          "name": "room_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position_description": {
+          "name": "position_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preferred_style": {
+          "name": "preferred_style",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "color_scheme": {
+          "name": "color_scheme",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fixture_method": {
+          "name": "fixture_method",
+          "type": "fixture_method",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max_weight_kg": {
+          "name": "max_weight_kg",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max_width_cm": {
+          "name": "max_width_cm",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max_height_cm": {
+          "name": "max_height_cm",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "max_depth_cm": {
+          "name": "max_depth_cm",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preferred_price_range_min": {
+          "name": "preferred_price_range_min",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preferred_price_range_max": {
+          "name": "preferred_price_range_max",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "spot_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'draft'"
+        },
+        "current_artwork_id": {
+          "name": "current_artwork_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "qr_code_url": {
+          "name": "qr_code_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "spots_property_id_fkey": {
+          "name": "spots_property_id_fkey",
+          "tableFrom": "spots",
+          "tableTo": "properties",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "property_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "spots_spot_id_key": {
+          "columns": [
+            "spot_id"
+          ],
+          "nullsNotDistinct": false,
+          "name": "spots_spot_id_key"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {
+        "host_spot_select": {
+          "name": "host_spot_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "public"
+          ],
+          "using": "((EXISTS ( SELECT 1\n   FROM properties\n  WHERE ((properties.id = spots.property_id) AND ((properties.owner_id = auth.uid()) OR (EXISTS ( SELECT 1\n           FROM property_admins\n          WHERE ((property_admins.property_id = properties.id) AND (property_admins.user_id = auth.uid())))))))) OR (EXISTS ( SELECT 1\n   FROM users\n  WHERE ((users.id = auth.uid()) AND (users.role = 'admin'::user_role)))))"
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.spot_photos": {
+      "name": "spot_photos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuid_generate_v4()"
+        },
+        "spot_id": {
+          "name": "spot_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storage_path": {
+          "name": "storage_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "folder_path": {
+          "name": "folder_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'spots'"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "spot_photos_spot_id_fkey": {
+          "name": "spot_photos_spot_id_fkey",
+          "tableFrom": "spot_photos",
+          "tableTo": "spots",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "spot_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.artworks": {
+      "name": "artworks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuid_generate_v4()"
+        },
+        "artwork_id": {
+          "name": "artwork_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "artist_id": {
+          "name": "artist_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "year": {
+          "name": "year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "place": {
+          "name": "place",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "style": {
+          "name": "style",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "medium": {
+          "name": "medium",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_unique": {
+          "name": "is_unique",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "edition_number": {
+          "name": "edition_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "edition_total": {
+          "name": "edition_total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "width_cm": {
+          "name": "width_cm",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "height_cm": {
+          "name": "height_cm",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "depth_cm": {
+          "name": "depth_cm",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weight_kg": {
+          "name": "weight_kg",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price": {
+          "name": "price",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "artwork_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'draft'"
+        },
+        "current_spot_id": {
+          "name": "current_spot_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "qr_code_url": {
+          "name": "qr_code_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "artworks_artist_id_fkey": {
+          "name": "artworks_artist_id_fkey",
+          "tableFrom": "artworks",
+          "tableTo": "artists",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "artist_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "fk_spot": {
+          "name": "fk_spot",
+          "tableFrom": "artworks",
+          "tableTo": "spots",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "current_spot_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "artworks_artwork_id_key": {
+          "columns": [
+            "artwork_id"
+          ],
+          "nullsNotDistinct": false,
+          "name": "artworks_artwork_id_key"
+        }
+      },
+      "checkConstraints": {
+        "edition_check": {
+          "name": "edition_check",
+          "value": "((is_unique = true) AND (edition_number IS NULL) AND (edition_total IS NULL)) OR ((is_unique = false) AND (edition_number IS NOT NULL) AND (edition_total IS NOT NULL))"
+        }
+      },
+      "policies": {
+        "artist_artwork_insert": {
+          "name": "artist_artwork_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": [
+            "public"
+          ],
+          "withCheck": "((artist_id = auth.uid()) OR (EXISTS ( SELECT 1\n   FROM users\n  WHERE ((users.id = auth.uid()) AND (users.role = 'admin'::user_role)))))"
+        },
+        "artist_artwork_select": {
+          "name": "artist_artwork_select",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": [
+            "public"
+          ]
+        },
+        "artist_artwork_update": {
+          "name": "artist_artwork_update",
+          "as": "PERMISSIVE",
+          "for": "UPDATE",
+          "to": [
+            "public"
+          ]
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.artwork_photos": {
+      "name": "artwork_photos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuid_generate_v4()"
+        },
+        "artwork_id": {
+          "name": "artwork_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storage_path": {
+          "name": "storage_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "folder_path": {
+          "name": "folder_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'artworks'"
+        },
+        "is_primary": {
+          "name": "is_primary",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "artwork_photos_artwork_id_fkey": {
+          "name": "artwork_photos_artwork_id_fkey",
+          "tableFrom": "artwork_photos",
+          "tableTo": "artworks",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "artwork_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.artwork_spot_allocations": {
+      "name": "artwork_spot_allocations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuid_generate_v4()"
+        },
+        "artwork_id": {
+          "name": "artwork_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spot_id": {
+          "name": "spot_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "allocated_at": {
+          "name": "allocated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "allocated_by": {
+          "name": "allocated_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "delivered_at": {
+          "name": "delivered_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "live_at": {
+          "name": "live_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ended_at": {
+          "name": "ended_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_reason": {
+          "name": "end_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "artwork_spot_allocations_allocated_by_fkey": {
+          "name": "artwork_spot_allocations_allocated_by_fkey",
+          "tableFrom": "artwork_spot_allocations",
+          "tableTo": "users",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "allocated_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "artwork_spot_allocations_artwork_id_fkey": {
+          "name": "artwork_spot_allocations_artwork_id_fkey",
+          "tableFrom": "artwork_spot_allocations",
+          "tableTo": "artworks",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "artwork_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "artwork_spot_allocations_spot_id_fkey": {
+          "name": "artwork_spot_allocations_spot_id_fkey",
+          "tableFrom": "artwork_spot_allocations",
+          "tableTo": "spots",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "spot_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.registration_approvals": {
+      "name": "registration_approvals",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuid_generate_v4()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "approved_by": {
+          "name": "approved_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "registration_approvals_approved_by_fkey": {
+          "name": "registration_approvals_approved_by_fkey",
+          "tableFrom": "registration_approvals",
+          "tableTo": "users",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "approved_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "registration_approvals_user_id_fkey": {
+          "name": "registration_approvals_user_id_fkey",
+          "tableFrom": "registration_approvals",
+          "tableTo": "users",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "registration_approvals_status_check": {
+          "name": "registration_approvals_status_check",
+          "value": "status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text])"
+        }
+      },
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.property_admins": {
+      "name": "property_admins",
+      "schema": "",
+      "columns": {
+        "property_id": {
+          "name": "property_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "property_admins_property_id_fkey": {
+          "name": "property_admins_property_id_fkey",
+          "tableFrom": "property_admins",
+          "tableTo": "properties",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "property_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "property_admins_user_id_fkey": {
+          "name": "property_admins_user_id_fkey",
+          "tableFrom": "property_admins",
+          "tableTo": "hosts",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "property_admins_pkey": {
+          "name": "property_admins_pkey",
+          "columns": [
+            "property_id",
+            "user_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
     }
   },
-  "enums": {},
+  "enums": {
+    "public.artist_type": {
+      "name": "artist_type",
+      "values": [
+        "artist",
+        "agent"
+      ],
+      "schema": "public"
+    },
+    "public.artwork_status": {
+      "name": "artwork_status",
+      "values": [
+        "draft",
+        "pending_approval",
+        "ready_for_allocation",
+        "allocated",
+        "delivered",
+        "live",
+        "sold"
+      ],
+      "schema": "public"
+    },
+    "public.delivery_option": {
+      "name": "delivery_option",
+      "values": [
+        "pickup",
+        "delivery"
+      ],
+      "schema": "public"
+    },
+    "public.fixture_method": {
+      "name": "fixture_method",
+      "values": [
+        "wall_mount",
+        "pedestal",
+        "ceiling_hang",
+        "easel",
+        "shelf",
+        "floor_stand",
+        "other"
+      ],
+      "schema": "public"
+    },
+    "public.host_type": {
+      "name": "host_type",
+      "values": [
+        "host",
+        "owner"
+      ],
+      "schema": "public"
+    },
+    "public.spot_status": {
+      "name": "spot_status",
+      "values": [
+        "draft",
+        "pending_approval",
+        "ready_for_allocation",
+        "allocated",
+        "live"
+      ],
+      "schema": "public"
+    },
+    "public.user_role": {
+      "name": "user_role",
+      "values": [
+        "admin",
+        "artist",
+        "host"
+      ],
+      "schema": "public"
+    }
+  },
   "schemas": {},
   "sequences": {},
   "roles": {},
   "policies": {},
-  "views": {},
+  "views": {
+    "public.artwork_details": {
+      "name": "artwork_details",
+      "schema": "public",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "artwork_id": {
+          "name": "artwork_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "artist_id": {
+          "name": "artist_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "year": {
+          "name": "year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "place": {
+          "name": "place",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "style": {
+          "name": "style",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "medium": {
+          "name": "medium",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_unique": {
+          "name": "is_unique",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "edition_number": {
+          "name": "edition_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "edition_total": {
+          "name": "edition_total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "width_cm": {
+          "name": "width_cm",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height_cm": {
+          "name": "height_cm",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "depth_cm": {
+          "name": "depth_cm",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weight_kg": {
+          "name": "weight_kg",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "price": {
+          "name": "price",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "artwork_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_spot_id": {
+          "name": "current_spot_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "qr_code_url": {
+          "name": "qr_code_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "artist_first_name": {
+          "name": "artist_first_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "artist_last_name": {
+          "name": "artist_last_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "artist_display_name": {
+          "name": "artist_display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "primary_photo_url": {
+          "name": "primary_photo_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spot_identifier": {
+          "name": "spot_identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_property_name": {
+          "name": "current_property_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_property_city": {
+          "name": "current_property_city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "isExisting": false,
+      "definition": "SELECT a.id, a.artwork_id, a.artist_id, a.title, a.year, a.place, a.description, a.style, a.medium, a.is_unique, a.edition_number, a.edition_total, a.width_cm, a.height_cm, a.depth_cm, a.weight_kg, a.price, a.status, a.current_spot_id, a.qr_code_url, a.created_at, a.updated_at, u.first_name AS artist_first_name, u.last_name AS artist_last_name, ar.display_name AS artist_display_name, ( SELECT get_storage_url(artwork_photos.folder_path, artwork_photos.storage_path) AS get_storage_url FROM artwork_photos WHERE artwork_photos.artwork_id = a.id AND artwork_photos.is_primary = true LIMIT 1) AS primary_photo_url, s.spot_id AS spot_identifier, p.property_name AS current_property_name, p.city AS current_property_city FROM artworks a LEFT JOIN artists ar ON a.artist_id = ar.id LEFT JOIN users u ON ar.id = u.id LEFT JOIN spots s ON a.current_spot_id = s.id LEFT JOIN properties p ON s.property_id = p.id",
+      "materialized": false
+    },
+    "public.spot_details": {
+      "name": "spot_details",
+      "schema": "public",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "spot_id": {
+          "name": "spot_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "property_id": {
+          "name": "property_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "floor_number": {
+          "name": "floor_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "room_name": {
+          "name": "room_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position_description": {
+          "name": "position_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preferred_style": {
+          "name": "preferred_style",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "color_scheme": {
+          "name": "color_scheme",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fixture_method": {
+          "name": "fixture_method",
+          "type": "fixture_method",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_weight_kg": {
+          "name": "max_weight_kg",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_width_cm": {
+          "name": "max_width_cm",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_height_cm": {
+          "name": "max_height_cm",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "max_depth_cm": {
+          "name": "max_depth_cm",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preferred_price_range_min": {
+          "name": "preferred_price_range_min",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "preferred_price_range_max": {
+          "name": "preferred_price_range_max",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "spot_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_artwork_id": {
+          "name": "current_artwork_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "qr_code_url": {
+          "name": "qr_code_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "property_name": {
+          "name": "property_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "property_type": {
+          "name": "property_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "street_address": {
+          "name": "street_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "city": {
+          "name": "city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "country": {
+          "name": "country",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "artwork_identifier": {
+          "name": "artwork_identifier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_artwork_title": {
+          "name": "current_artwork_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_artwork_artist": {
+          "name": "current_artwork_artist",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "isExisting": false,
+      "definition": "SELECT s.id, s.spot_id, s.property_id, s.floor_number, s.room_name, s.position_description, s.preferred_style, s.color_scheme, s.fixture_method, s.max_weight_kg, s.max_width_cm, s.max_height_cm, s.max_depth_cm, s.preferred_price_range_min, s.preferred_price_range_max, s.status, s.current_artwork_id, s.qr_code_url, s.created_at, s.updated_at, p.property_name, p.property_type, p.street_address, p.city, p.state, c.name AS country, a.artwork_id AS artwork_identifier, a.title AS current_artwork_title, ar.display_name AS current_artwork_artist FROM spots s LEFT JOIN properties p ON s.property_id = p.id LEFT JOIN countries c ON p.country_code = c.code LEFT JOIN artworks a ON s.current_artwork_id = a.id LEFT JOIN artists ar ON a.artist_id = ar.id",
+      "materialized": false
+    }
+  },
   "_meta": {
-    "columns": {},
     "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
     "tables": {}
   }
 }

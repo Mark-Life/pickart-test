@@ -125,9 +125,6 @@ importers:
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
-      drizzle-kit:
-        specifier: ^0.30.5
-        version: 0.30.5
       drizzle-orm:
         specifier: ^0.40.0
         version: 0.40.0(@types/pg@8.11.6)(@vercel/postgres@0.10.0)(gel@2.0.1)(pg@8.14.0)(postgres@3.4.5)
@@ -192,6 +189,9 @@ importers:
       '@types/node':
         specifier: ^22
         version: 22.13.10
+      drizzle-kit:
+        specifier: ^0.30.5
+        version: 0.30.5
       postcss:
         specifier: ^8
         version: 8.5.3

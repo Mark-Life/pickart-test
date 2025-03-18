@@ -15,7 +15,7 @@ Root folder is for general project documentation.
 - Zustand: client-side state
 - Supabase: db used as the serivce, auth, Storage (CDN)
 - Drizzle: db orm
-- Tailwind
-- [Shadcn/vue](mdc:https:/www.shadcn-vue.com): UI components
+- Tailwind v4
+- Shadcn/ui: UI components
 - Vercel: hosting
 - Stripe: payment

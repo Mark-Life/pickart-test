@@ -12,10 +12,17 @@ import {
 } from "@/components/ui/dialog"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { ArtworkWithDetails } from "@/lib/art"
 
-export default function PurchaseButton({ artPiece }) {
+type PurchaseButtonProps = {
+  artPiece: ArtworkWithDetails
+}
+
+type DeliveryMethod = "delivery" | "pickup"
+
+export default function PurchaseButton({ artPiece }: PurchaseButtonProps) {
   const [open, setOpen] = useState(false)
-  const [deliveryMethod, setDeliveryMethod] = useState("delivery")
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>("delivery")
   const [isProcessing, setIsProcessing] = useState(false)
 
   const handleCheckout = async () => {
@@ -33,7 +40,11 @@ export default function PurchaseButton({ artPiece }) {
 
   return (
     <>
-      <Button className="w-full py-6 text-lg" onClick={() => setOpen(true)}>
+      <Button 
+        className="w-full py-6 text-lg" 
+        onClick={() => setOpen(true)}
+        type="button"
+      >
         Purchase
       </Button>
 
@@ -45,7 +56,7 @@ export default function PurchaseButton({ artPiece }) {
           </DialogHeader>
 
           <div className="py-4">
-            <RadioGroup value={deliveryMethod} onValueChange={setDeliveryMethod} className="space-y-4">
+            <RadioGroup value={deliveryMethod} onValueChange={(value: DeliveryMethod) => setDeliveryMethod(value)} className="space-y-4">
               <div className="flex items-start space-x-3 space-y-0">
                 <RadioGroupItem value="delivery" id="delivery" />
                 <div className="grid gap-1.5">
@@ -72,10 +83,19 @@ export default function PurchaseButton({ artPiece }) {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)} disabled={isProcessing}>
+            <Button 
+              variant="outline" 
+              onClick={() => setOpen(false)} 
+              disabled={isProcessing}
+              type="button"
+            >
               Cancel
             </Button>
-            <Button onClick={handleCheckout} disabled={isProcessing}>
+            <Button 
+              onClick={handleCheckout} 
+              disabled={isProcessing}
+              type="button"
+            >
               {isProcessing ? "Processing..." : "Continue to Checkout"}
             </Button>
           </DialogFooter>

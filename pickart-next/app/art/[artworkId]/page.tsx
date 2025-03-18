@@ -6,18 +6,23 @@ import PurchaseButton from "@/components/purchase-button"
 import ArtDetails from "@/components/art-details"
 import ArtGallery from "@/components/art-gallery"
 
+// Types for params
+type Params = {
+  artworkId: string
+}
+
 // Generate static pages at build time
 export async function generateStaticParams() {
   const artPieces = await getPublishedArtPieceIds()
 
-  return artPieces.map((id) => ({
-    id: id.toString(),
+  return artPieces.map((artworkId) => ({
+    artworkId: artworkId.toString(),
   }))
 }
 
 // Generate metadata for SEO
-export async function generateMetadata({ params }) {
-  const art = await getArtPieceById(params.id)
+export async function generateMetadata({ params }: { params: Params }) {
+  const art = await getArtPieceById(params.artworkId)
 
   if (!art) {
     return {
@@ -34,8 +39,8 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default async function ArtPiecePage({ params }) {
-  const art = await getArtPieceById(params.id)
+export default async function ArtPiecePage({ params }: { params: Params }) {
+  const art = await getArtPieceById(params.artworkId)
 
   if (!art || !art.published) {
     notFound()

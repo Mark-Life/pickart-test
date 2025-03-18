@@ -1,168 +1,347 @@
 // This file will be replaced with actual Supabase connections
 // Mock database of art pieces for development
 
-// SUPABASE INTEGRATION:
-// Import the Supabase client
-// import { createClient } from '@supabase/supabase-js'
-//
-// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-// const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-// const supabase = createClient(supabaseUrl, supabaseKey)
-
+// Import for Supabase client
+import { createClient } from '@supabase/supabase-js'
 import { db } from "./db"
-import { artPieces } from "./db/schema"
-import { eq } from "drizzle-orm"
+import { artworks, artworkPhotos, artists, users } from "./db/schema"
+import { eq, and, SQL, asc } from "drizzle-orm"
 
-// Mock art pieces data
-const mockArtPieces = [
-  {
-    id: "1",
-    title: "Sunset Horizon",
-    artist: "Emma Johnson",
-    year: 2023,
-    price: 2500,
-    description:
-      "A vibrant depiction of a sunset over the ocean, capturing the warm hues of the evening sky reflecting on the water. This piece evokes a sense of peace and contemplation.",
-    dimensions: '36" × 48"',
-    medium: "Oil on canvas",
-    style: "Contemporary",
-    published: true,
-    images: [
-      "/placeholder.svg?height=800&width=600",
-      "/placeholder.svg?height=800&width=600&text=Detail+1",
-      "/placeholder.svg?height=800&width=600&text=Detail+2",
-    ],
-  },
-  {
-    id: "2",
-    title: "Urban Rhythm",
-    artist: "Marcus Chen",
-    year: 2022,
-    price: 1800,
-    description:
-      "An abstract representation of city life, with geometric shapes and bold colors creating a sense of movement and energy. The piece captures the dynamic nature of urban environments.",
-    dimensions: '24" × 36"',
-    medium: "Acrylic on canvas",
-    style: "Abstract",
-    published: true,
-    images: [
-      "/placeholder.svg?height=800&width=600&text=Urban+Rhythm",
-      "/placeholder.svg?height=800&width=600&text=Detail+1",
-    ],
-  },
-  {
-    id: "3",
-    title: "Serene Forest",
-    artist: "Olivia Parker",
-    year: 2021,
-    price: 3200,
-    description:
-      "A detailed landscape painting of a misty forest at dawn. The interplay of light filtering through the trees creates a magical atmosphere that invites the viewer to step into the scene.",
-    dimensions: '40" × 30"',
-    medium: "Oil on canvas",
-    style: "Realism",
-    published: true,
-    images: [
-      "/placeholder.svg?height=800&width=600&text=Serene+Forest",
-      "/placeholder.svg?height=800&width=600&text=Detail+1",
-      "/placeholder.svg?height=800&width=600&text=Detail+2",
-      "/placeholder.svg?height=800&width=600&text=Detail+3",
-    ],
-  },
-  {
-    id: "4",
-    title: "Fragmented Memories",
-    artist: "James Wilson",
-    year: 2023,
-    price: 2100,
-    description:
-      "A mixed media piece exploring the concept of memory and how our recollections become fragmented over time. Layers of materials create depth and texture, symbolizing the complexity of human memory.",
-    dimensions: '30" × 30"',
-    medium: "Mixed media on wood panel",
-    style: "Contemporary",
-    published: true,
-    images: [
-      "/placeholder.svg?height=800&width=600&text=Fragmented+Memories",
-      "/placeholder.svg?height=800&width=600&text=Detail+1",
-    ],
-  },
-  {
-    id: "5",
-    title: "Whispers of the Sea",
-    artist: "Sophia Martinez",
-    year: 2022,
-    price: 2800,
-    description:
-      "An impressionistic seascape that captures the ever-changing nature of the ocean. Textured brushstrokes create movement, giving the viewer a sense of standing by the shore.",
-    dimensions: '36" × 24"',
-    medium: "Oil on canvas",
-    style: "Impressionism",
-    published: true,
-    images: [
-      "/placeholder.svg?height=800&width=600&text=Whispers+of+the+Sea",
-      "/placeholder.svg?height=800&width=600&text=Detail+1",
-      "/placeholder.svg?height=800&width=600&text=Detail+2",
-    ],
-  },
-  {
-    id: "6",
-    title: "Untitled No. 7",
-    artist: "David Lee",
-    year: 2023,
-    price: 1500,
-    description:
-      "A minimalist composition exploring the relationship between form and space. The subtle color palette creates a contemplative atmosphere.",
-    dimensions: '24" × 24"',
-    medium: "Acrylic on canvas",
-    style: "Minimalism",
-    published: false, // Unpublished piece
-    images: ["/placeholder.svg?height=800&width=600&text=Untitled+No.+7"],
-  },
-]
+// Type for artwork with all necessary fields for display
+export type ArtworkWithDetails = {
+  id: string
+  artworkId: string
+  title: string
+  artist: string // Display name from artists table
+  year: number
+  price: number
+  description: string | null
+  dimensions: string // Composed from width, height, depth
+  medium: string
+  style: string | null
+  published: boolean // Derived from status being 'live'
+  images: string[] // URLs from artwork_photos
+  createdAt: Date
+  updatedAt: Date
+}
 
-// Get all published art pieces
-export async function getPublishedArtPieces() {
-  const result = await db.select().from(artPieces).where(eq(artPieces.published, true))
-  return result
+// Supabase client setup - only initialize if environment variables are available
+let supabase: any = null;
+let supabaseUrl: string | undefined;
+
+try {
+  supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (supabaseUrl && supabaseKey) {
+    supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('Supabase client initialized successfully');
+  } else {
+    console.warn('Supabase environment variables missing, using fallback mode');
+  }
+} catch (error) {
+  console.error('Failed to initialize Supabase client:', error);
+}
+
+// Helper to create storage URLs
+function getStorageUrl(folderPath: string, storagePath: string): string {
+  if (!storagePath) {
+    return '/placeholder.svg';
+  }
+  
+  try {
+    if (supabaseUrl && supabase) {
+      // Ensure folder path doesn't have leading/trailing slashes
+      const normalizedFolder = folderPath.replace(/^\/|\/$/g, '');
+      
+      // Ensure storage path doesn't have leading slashes
+      const normalizedStorage = storagePath.replace(/^\//, '');
+      
+      return `${supabaseUrl}/storage/v1/object/public/pickart/${normalizedFolder}/${normalizedStorage}`;
+    }
+  } catch (error) {
+    console.warn('Error creating storage URL:', error);
+  }
+  
+  // Fallback to placeholder if Supabase not configured or error occurs
+  return `/placeholder.svg?text=${encodeURIComponent(storagePath.split('/').pop() || 'image')}`;
+}
+
+// Get all published art pieces (status = 'live')
+export async function getPublishedArtPieces(): Promise<ArtworkWithDetails[]> {
+  const result = await db
+    .select({
+      id: artworks.id,
+      artworkId: artworks.artworkId,
+      title: artworks.title,
+      artistId: artworks.artistId,
+      year: artworks.year,
+      description: artworks.description,
+      medium: artworks.medium,
+      style: artworks.style,
+      widthCm: artworks.widthCm,
+      heightCm: artworks.heightCm,
+      depthCm: artworks.depthCm,
+      price: artworks.price,
+      status: artworks.status,
+      createdAt: artworks.createdAt,
+      updatedAt: artworks.updatedAt,
+    })
+    .from(artworks)
+    .where(eq(artworks.status, 'live'))
+    .orderBy(asc(artworks.createdAt))
+
+  // Fetch additional details for each artwork
+  const enrichedResults = await Promise.all(
+    result.map(async (artwork) => {
+      // Get artist display name
+      const artist = await db
+        .select({
+          displayName: artists.displayName,
+          firstName: users.firstName,
+          lastName: users.lastName,
+        })
+        .from(artists)
+        .innerJoin(users, eq(artists.id, users.id))
+        .where(eq(artists.id, artwork.artistId))
+        .limit(1)
+
+      // Get artwork images
+      const photos = await db
+        .select({
+          storagePath: artworkPhotos.storagePath,
+          folderPath: artworkPhotos.folderPath,
+          isPrimary: artworkPhotos.isPrimary,
+        })
+        .from(artworkPhotos)
+        .where(eq(artworkPhotos.artworkId, artwork.id))
+        .orderBy(asc(artworkPhotos.isPrimary))
+
+      // Create image URLs
+      const imageUrls = photos.map(photo => 
+        getStorageUrl(photo.folderPath, photo.storagePath)
+      )
+
+      // Create dimensions string
+      const dimensions = `${artwork.widthCm} × ${artwork.heightCm}${artwork.depthCm ? ' × ' + artwork.depthCm : ''} cm`
+
+      return {
+        id: artwork.id,
+        artworkId: artwork.artworkId,
+        title: artwork.title,
+        artist: artist[0]?.displayName || `${artist[0]?.firstName} ${artist[0]?.lastName}` || 'Unknown Artist',
+        year: artwork.year,
+        price: Number(artwork.price),
+        description: artwork.description,
+        dimensions,
+        medium: artwork.medium,
+        style: artwork.style,
+        published: artwork.status === 'live',
+        images: imageUrls.length > 0 ? imageUrls : ['/placeholder.svg'],
+        createdAt: artwork.createdAt,
+        updatedAt: artwork.updatedAt,
+      }
+    })
+  )
+
+  return enrichedResults
 }
 
 // Get all art pieces (for admin)
-export async function getAllArtPieces() {
-  const result = await db.select().from(artPieces)
-  return result
+export async function getAllArtPieces(): Promise<ArtworkWithDetails[]> {
+  const result = await db
+    .select({
+      id: artworks.id,
+      artworkId: artworks.artworkId,
+      title: artworks.title,
+      artistId: artworks.artistId,
+      year: artworks.year,
+      description: artworks.description,
+      medium: artworks.medium,
+      style: artworks.style,
+      widthCm: artworks.widthCm,
+      heightCm: artworks.heightCm,
+      depthCm: artworks.depthCm,
+      price: artworks.price,
+      status: artworks.status,
+      createdAt: artworks.createdAt,
+      updatedAt: artworks.updatedAt,
+    })
+    .from(artworks)
+    .orderBy(asc(artworks.createdAt))
+
+  // Reuse the same enrichment logic as getPublishedArtPieces
+  const enrichedResults = await Promise.all(
+    result.map(async (artwork) => {
+      // Get artist display name
+      const artist = await db
+        .select({
+          displayName: artists.displayName,
+          firstName: users.firstName,
+          lastName: users.lastName,
+        })
+        .from(artists)
+        .innerJoin(users, eq(artists.id, users.id))
+        .where(eq(artists.id, artwork.artistId))
+        .limit(1)
+
+      // Get artwork images
+      const photos = await db
+        .select({
+          storagePath: artworkPhotos.storagePath,
+          folderPath: artworkPhotos.folderPath,
+          isPrimary: artworkPhotos.isPrimary,
+        })
+        .from(artworkPhotos)
+        .where(eq(artworkPhotos.artworkId, artwork.id))
+        .orderBy(asc(artworkPhotos.isPrimary))
+
+      // Create image URLs
+      const imageUrls = photos.map(photo => 
+        getStorageUrl(photo.folderPath, photo.storagePath)
+      )
+
+      // Create dimensions string
+      const dimensions = `${artwork.widthCm} × ${artwork.heightCm}${artwork.depthCm ? ' × ' + artwork.depthCm : ''} cm`
+
+      return {
+        id: artwork.id,
+        artworkId: artwork.artworkId,
+        title: artwork.title,
+        artist: artist[0]?.displayName || `${artist[0]?.firstName} ${artist[0]?.lastName}` || 'Unknown Artist',
+        year: artwork.year,
+        price: Number(artwork.price),
+        description: artwork.description,
+        dimensions,
+        medium: artwork.medium,
+        style: artwork.style,
+        published: artwork.status === 'live',
+        images: imageUrls.length > 0 ? imageUrls : ['/placeholder.svg'],
+        createdAt: artwork.createdAt,
+        updatedAt: artwork.updatedAt,
+      }
+    })
+  )
+
+  return enrichedResults
 }
 
 // Get all published art piece IDs for static generation
-export async function getPublishedArtPieceIds() {
+export async function getPublishedArtPieceIds(): Promise<string[]> {
   const result = await db
-    .select({ id: artPieces.id })
-    .from(artPieces)
-    .where(eq(artPieces.published, true))
-  return result.map((item) => item.id)
+    .select({ artworkId: artworks.artworkId })
+    .from(artworks)
+    .where(eq(artworks.status, 'live'))
+
+  return result.map((item) => item.artworkId)
 }
 
 // Get a specific art piece by ID
-export async function getArtPieceById(id: string) {
-  const result = await db.select().from(artPieces).where(eq(artPieces.id, id))
-  return result[0] || null
+export async function getArtPieceById(artworkId: string): Promise<ArtworkWithDetails | null> {
+  const result = await db
+    .select({
+      id: artworks.id,
+      artworkId: artworks.artworkId,
+      title: artworks.title,
+      artistId: artworks.artistId,
+      year: artworks.year,
+      description: artworks.description,
+      medium: artworks.medium,
+      style: artworks.style,
+      widthCm: artworks.widthCm,
+      heightCm: artworks.heightCm,
+      depthCm: artworks.depthCm,
+      price: artworks.price,
+      status: artworks.status,
+      createdAt: artworks.createdAt,
+      updatedAt: artworks.updatedAt,
+    })
+    .from(artworks)
+    .where(eq(artworks.artworkId, artworkId))
+    .limit(1)
+  
+  if (result.length === 0) {
+    return null
+  }
+
+  const artwork = result[0]
+
+  // Get artist display name
+  const artist = await db
+    .select({
+      displayName: artists.displayName,
+      firstName: users.firstName,
+      lastName: users.lastName,
+    })
+    .from(artists)
+    .innerJoin(users, eq(artists.id, users.id))
+    .where(eq(artists.id, artwork.artistId))
+    .limit(1)
+
+  // Get artwork images
+  const photos = await db
+    .select({
+      storagePath: artworkPhotos.storagePath,
+      folderPath: artworkPhotos.folderPath,
+      isPrimary: artworkPhotos.isPrimary,
+    })
+    .from(artworkPhotos)
+    .where(eq(artworkPhotos.artworkId, artwork.id))
+    .orderBy(asc(artworkPhotos.isPrimary))
+
+  // Create image URLs
+  const imageUrls = photos.map(photo => 
+    getStorageUrl(photo.folderPath, photo.storagePath)
+  )
+
+  // Create dimensions string
+  const dimensions = `${artwork.widthCm} × ${artwork.heightCm}${artwork.depthCm ? ' × ' + artwork.depthCm : ''} cm`
+
+  return {
+    id: artwork.id,
+    artworkId: artwork.artworkId,
+    title: artwork.title,
+    artist: artist[0]?.displayName || `${artist[0]?.firstName} ${artist[0]?.lastName}` || 'Unknown Artist',
+    year: artwork.year,
+    price: Number(artwork.price),
+    description: artwork.description,
+    dimensions,
+    medium: artwork.medium,
+    style: artwork.style,
+    published: artwork.status === 'live',
+    images: imageUrls.length > 0 ? imageUrls : ['/placeholder.svg'],
+    createdAt: artwork.createdAt,
+    updatedAt: artwork.updatedAt,
+  }
 }
 
 // Update art piece status (publish/unpublish)
-export async function updateArtPieceStatus(id: string, published: boolean) {
+export async function updateArtPieceStatus(artworkId: string, published: boolean): Promise<ArtworkWithDetails | null> {
+  const status = published ? 'live' : 'draft'
+  
   const result = await db
-    .update(artPieces)
-    .set({ published, updatedAt: new Date() })
-    .where(eq(artPieces.id, id))
+    .update(artworks)
+    .set({ status, updatedAt: new Date() })
+    .where(eq(artworks.artworkId, artworkId))
     .returning()
   
-  if (!result[0]) {
-    throw new Error(`Art piece with ID ${id} not found`)
+  if (result.length === 0) {
+    throw new Error(`Art piece with ID ${artworkId} not found`)
   }
 
   // Trigger revalidation
-  await fetch(`${process.env.VERCEL_BRANCH_URL}/api/revalidate?token=${process.env.REVALIDATION_TOKEN}&path=/art/${id}`)
-  await fetch(`${process.env.VERCEL_BRANCH_URL}/api/revalidate?token=${process.env.REVALIDATION_TOKEN}&path=/art`)
+  try {
+    if (process.env.VERCEL_BRANCH_URL && process.env.REVALIDATION_TOKEN) {
+      await fetch(`${process.env.VERCEL_BRANCH_URL}/api/revalidate?token=${process.env.REVALIDATION_TOKEN}&path=/art/${artworkId}`)
+      await fetch(`${process.env.VERCEL_BRANCH_URL}/api/revalidate?token=${process.env.REVALIDATION_TOKEN}&path=/art`)
+    } else {
+      console.warn('Revalidation skipped: VERCEL_BRANCH_URL or REVALIDATION_TOKEN not set')
+    }
+  } catch (error) {
+    console.error('Failed to trigger revalidation:', error)
+  }
 
-  return result[0]
+  // Return updated artwork with details
+  return getArtPieceById(artworkId)
 }
 
