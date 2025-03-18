@@ -1,3 +1,31 @@
+# Product Brief
+
+PickArt is an online platform that connects artists with property owners (hotels and short-term rentals) and their guests, to display and sell the artists' work (AW). The platform facilitates the interaction between the guests and the art, and enables guests to buy the art directly from the artist.
+
+PickArt generates revenue by charging a small fee per AW per night for art displayed in short-term rentals and by sharing the revenue from art sales between the artist, the property owner, and PickArt.
+
+
+## Primary Business Model
+
+The PickArt primary business model connects artists/agents with short-term rental property owners and managers (hosts), and guests.
+
+- Properties are evaluated to determine if they have appropriate space to display AW (AW). The space must be able to accommodate the AW's artistic style, price, weight, dimensions and fixture method.
+- The unique spots are entered into PickArt’s database, assigned a QR code, and placed at the spots within the properties
+- An AW that matches the spot's requirements is allocated to the spot.
+- Once the host approves the AW (host approval flow can be turned on/off), PickArt facilitates communication between the artist and host to deliver and install the art.
+- The QR code in the allocated spot will redirect to a dedicated page with information about the displayed AW.
+- A guest staying in the property is charged an ArtBonus of 0.1% of the sale price of the AW per night.
+- When an AW is sold, it is shipped to the guest, and the space is immediately filled with a new AW. The same QR code is used for the new AW.
+- Revenue from ArtBonus is paid by the host to PickArt (who further distributes it to artist if applicable, based on business rules)
+- Revenue from AW sale is collected by PickArt and distributed to owner and artist (if applicable, based on business rules)
+
+## Platform description
+
+The software should enable artists or art agents to upload their AW along with all the necessary details. This information should then be verified and approved by a PickArt administrator before the AW's webpage is created. The webpage should display the Artist's name, AW title, year, price, short description, technical parameters (such as dimensions) and photographs.
+
+The webpage must also include a clear and straightforward purchase option. The checkout process should offer delivery or self-pickup (if the user/purchaser is physically at the AW's location). Additionally, the software should allow the creation of data entries for spots. If a spot is empty or needs a replacement, the administrator can allocate it with an available AW. The allocation should be saved by the software and become active once the AW is placed at the spot. At that time, the spot's QR code should redirect to the AW's webpage.
+
+
 # MVP Epics & User Stories (Phase 0\)
 
 1. **User Registration, Authentication and Management**  

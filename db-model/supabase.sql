@@ -127,7 +127,8 @@ CREATE TABLE users (
 
 -- Artists table
 CREATE TABLE artists (
-  id UUID PRIMARY KEY REFERENCES users(id),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id),
   artist_type artist_type NOT NULL,
   display_name TEXT NOT NULL,
   bank_account_id UUID REFERENCES bank_accounts(id),
@@ -138,7 +139,8 @@ CREATE TABLE artists (
 
 -- Hosts table
 CREATE TABLE hosts (
-  id UUID PRIMARY KEY REFERENCES users(id),
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id),
   host_type host_type NOT NULL,
   business_name TEXT,
   bank_account_id UUID REFERENCES bank_accounts(id),
@@ -621,39 +623,76 @@ CREATE POLICY user_update_own ON users FOR UPDATE
 CREATE POLICY bank_account_select ON bank_accounts FOR SELECT 
   USING (
     EXISTS (
-      SELECT 1 FROM artists a WHERE a.bank_account_id = bank_accounts.id AND a.id = auth.uid()
+      SELECT 1 FROM artists a WHERE a.bank_account_id = bank_accounts.id AND a.user_id = auth.uid()
     ) OR
     EXISTS (
-      SELECT 1 FROM hosts h WHERE h.bank_account_id = bank_accounts.id AND h.id = auth.uid()
+      SELECT 1 FROM hosts h WHERE h.bank_account_id = bank_accounts.id AND h.user_id = auth.uid()
     ) OR
     EXISTS (
       SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'
     )
   );
 
--- Artists can only see and update their own artworks
+-- Artists can only see and update their own artworks or artworks of artists they represent
 CREATE POLICY artist_artwork_select ON artworks FOR SELECT 
   USING (
-    artist_id = auth.uid() OR 
+    EXISTS (
+      SELECT 1 FROM artists a 
+      WHERE a.id = artworks.artist_id 
+      AND (
+        a.user_id = auth.uid() OR
+        EXISTS (
+          SELECT 1 FROM artists a2 
+          WHERE a2.user_id = auth.uid() 
+          AND a2.artist_type = 'agent'
+        )
+      )
+    ) OR 
     EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
   );
 
 CREATE POLICY artist_artwork_insert ON artworks FOR INSERT 
   WITH CHECK (
-    artist_id = auth.uid() OR 
+    EXISTS (
+      SELECT 1 FROM artists a 
+      WHERE a.id = artist_id 
+      AND (
+        a.user_id = auth.uid() OR
+        EXISTS (
+          SELECT 1 FROM artists a2 
+          WHERE a2.user_id = auth.uid() 
+          AND a2.artist_type = 'agent'
+        )
+      )
+    ) OR 
     EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
   );
 
 CREATE POLICY artist_artwork_update ON artworks FOR UPDATE 
   USING (
-    artist_id = auth.uid() OR 
+    EXISTS (
+      SELECT 1 FROM artists a 
+      WHERE a.id = artist_id 
+      AND (
+        a.user_id = auth.uid() OR
+        EXISTS (
+          SELECT 1 FROM artists a2 
+          WHERE a2.user_id = auth.uid() 
+          AND a2.artist_type = 'agent'
+        )
+      )
+    ) OR 
     EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
   );
 
 -- Host policies for properties
 CREATE POLICY host_property_select ON properties FOR SELECT 
   USING (
-    owner_id = auth.uid() OR
+    EXISTS (
+      SELECT 1 FROM hosts h 
+      WHERE h.id = properties.owner_id 
+      AND h.user_id = auth.uid()
+    ) OR
     EXISTS (
       SELECT 1 FROM property_admins 
       WHERE property_id = properties.id AND user_id = auth.uid()
@@ -665,12 +704,14 @@ CREATE POLICY host_property_select ON properties FOR SELECT
 CREATE POLICY host_spot_select ON spots FOR SELECT 
   USING (
     EXISTS (
-      SELECT 1 FROM properties 
-      WHERE properties.id = spots.property_id AND (
-        properties.owner_id = auth.uid() OR
+      SELECT 1 FROM properties p
+      JOIN hosts h ON h.id = p.owner_id
+      WHERE p.id = spots.property_id 
+      AND (
+        h.user_id = auth.uid() OR
         EXISTS (
           SELECT 1 FROM property_admins 
-          WHERE property_id = properties.id AND user_id = auth.uid()
+          WHERE property_id = p.id AND user_id = auth.uid()
         )
       )
     ) OR
