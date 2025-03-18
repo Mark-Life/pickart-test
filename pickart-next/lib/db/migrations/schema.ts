@@ -39,11 +39,6 @@ export const users = pgTable("users", {
 			foreignColumns: [countries.code],
 			name: "users_country_code_fkey"
 		}),
-	foreignKey({
-			columns: [table.id],
-			foreignColumns: [table.id],
-			name: "users_id_fkey"
-		}),
 	unique("users_email_key").on(table.email),
 	pgPolicy("admin_all", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(EXISTS ( SELECT 1
    FROM users users_1
@@ -53,7 +48,8 @@ export const users = pgTable("users", {
 ]);
 
 export const artists = pgTable("artists", {
-	id: uuid().primaryKey().notNull(),
+	id: uuid().primaryKey().defaultRandom().notNull(),
+	userId: uuid("user_id").references(() => users.id),
 	artistType: artistType("artist_type").notNull(),
 	displayName: text("display_name").notNull(),
 	bankAccountId: uuid("bank_account_id"),
@@ -66,15 +62,11 @@ export const artists = pgTable("artists", {
 			foreignColumns: [bankAccounts.id],
 			name: "artists_bank_account_id_fkey"
 		}),
-	foreignKey({
-			columns: [table.id],
-			foreignColumns: [users.id],
-			name: "artists_id_fkey"
-		}),
 ]);
 
 export const hosts = pgTable("hosts", {
-	id: uuid().primaryKey().notNull(),
+	id: uuid().primaryKey().defaultRandom().notNull(),
+	userId: uuid("user_id").references(() => users.id),
 	hostType: hostType("host_type").notNull(),
 	businessName: text("business_name"),
 	bankAccountId: uuid("bank_account_id"),
@@ -86,11 +78,6 @@ export const hosts = pgTable("hosts", {
 			columns: [table.bankAccountId],
 			foreignColumns: [bankAccounts.id],
 			name: "hosts_bank_account_id_fkey"
-		}),
-	foreignKey({
-			columns: [table.id],
-			foreignColumns: [users.id],
-			name: "hosts_id_fkey"
 		}),
 ]);
 
@@ -130,7 +117,7 @@ export const properties = pgTable("properties", {
 	sizeSqm: numeric("size_sqm", { precision: 10, scale:  2 }),
 	totalFloors: integer("total_floors"),
 	totalRooms: integer("total_rooms"),
-	ownerId: uuid("owner_id"),
+	ownerId: uuid("owner_id").references(() => hosts.id),
 	contactPhone: text("contact_phone").notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
@@ -139,11 +126,6 @@ export const properties = pgTable("properties", {
 			columns: [table.countryCode],
 			foreignColumns: [countries.code],
 			name: "properties_country_code_fkey"
-		}),
-	foreignKey({
-			columns: [table.ownerId],
-			foreignColumns: [hosts.id],
-			name: "properties_owner_id_fkey"
 		}),
 	foreignKey({
 			columns: [table.propertyType],

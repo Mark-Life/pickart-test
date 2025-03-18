@@ -17,14 +17,6 @@ export default async function AdminDashboard() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Art Pieces Management</h1>
-        <div className="flex space-x-4">
-          <Link
-            href="/admin/places"
-            className="px-4 py-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-colors"
-          >
-            Manage Places
-          </Link>
-        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">

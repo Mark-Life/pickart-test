@@ -72,7 +72,8 @@ export const users = pgTable("users", {
 })
 
 export const artists = pgTable("artists", {
-  id: uuid("id").primaryKey().references(() => users.id),
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => users.id),
   artistType: artistTypeEnum("artist_type").notNull(),
   displayName: text("display_name").notNull(),
   bankAccountId: uuid("bank_account_id").references(() => bankAccounts.id),
@@ -82,7 +83,8 @@ export const artists = pgTable("artists", {
 })
 
 export const hosts = pgTable("hosts", {
-  id: uuid("id").primaryKey().references(() => users.id),
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => users.id),
   hostType: hostTypeEnum("host_type").notNull(),
   businessName: text("business_name"),
   bankAccountId: uuid("bank_account_id").references(() => bankAccounts.id),
