@@ -11,6 +11,8 @@ export async function generateStaticParams() {
 
   if (error) throw error
 
+  console.log(pieces)
+
   return pieces.map((piece) => ({
     id: piece.id,
   }))

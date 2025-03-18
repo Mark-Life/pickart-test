@@ -4,16 +4,22 @@ import { definePageMeta, useRoute, useAsyncData } from '#imports'
 import { useSupabase } from '~/composables/useSupabase'
 
 definePageMeta({
-  static: true,
-  revalidate: 604800, // 1 week in seconds
+  // Use SSR with caching
+  keepalive: true
 });
 
 const route = useRoute();
 const { getArtPiece } = useSupabase();
 
-// Fetch art piece at build time
-const { data: piece } = await useAsyncData<ArtPiece>(`art-piece-${route.params.id}`, () =>
-  getArtPiece(route.params.id as string)
+// Fetch art piece with caching
+const { data: piece } = await useAsyncData<ArtPiece | null>(
+  `art-piece-${route.params.id}`,
+  () => getArtPiece(route.params.id as string),
+  {
+    server: true,
+    default: () => null,
+    transform: (result) => result
+  }
 );
 </script>
 
