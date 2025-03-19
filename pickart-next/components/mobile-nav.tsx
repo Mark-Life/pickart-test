@@ -10,11 +10,7 @@ export function MobileNav() {
   const [open, setOpen] = useState(false)
 
   const navItems = [
-    { href: "/art", label: "Browse Art" },
-    { href: "/places", label: "Places" },
-    { href: "#", label: "Artists" },
-    { href: "#", label: "About" },
-    { href: "/admin", label: "Platform" },
+    { href: "/art", label: "Art" }
   ]
 
   return (
@@ -25,12 +21,12 @@ export function MobileNav() {
           <span className="sr-only">Toggle menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[80%] sm:w-[350px]">
+      <SheetContent side="top" className="h-auto pt-10">
         <SheetHeader>
-          <SheetTitle>Menu</SheetTitle>
+          <SheetTitle className="text-center">Menu</SheetTitle>
         </SheetHeader>
-        <nav className="mt-8">
-          <ul className="space-y-4">
+        <nav className="mt-6">
+          <ul className="flex flex-col items-center space-y-4">
             {navItems.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className="block py-2 text-lg hover:text-primary" onClick={() => setOpen(false)}>

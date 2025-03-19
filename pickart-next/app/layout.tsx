@@ -2,8 +2,7 @@ import type React from "react"
 import "./globals.css"
 import { Inter } from "next/font/google"
 import Link from "next/link"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu } from "lucide-react"
+import { MobileNav } from "@/components/mobile-nav"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -28,70 +27,14 @@ export default function RootLayout({
             </Link>
 
             {/* Mobile Navigation */}
-            <Sheet>
-              <SheetTrigger className="md:hidden">
-                <Menu className="h-6 w-6" />
-                <span className="sr-only">Toggle menu</span>
-              </SheetTrigger>
-              <SheetContent side="right">
-                <nav className="flex flex-col mt-8">
-                  <ul className="space-y-4">
-                    <li>
-                      <Link href="/art" className="text-lg">
-                        Browse Art
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/places" className="text-lg">
-                        Places
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="#" className="text-lg">
-                        Artists
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="#" className="text-lg">
-                        About
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="/admin" className="text-lg">
-                        Platform
-                      </Link>
-                    </li>
-                  </ul>
-                </nav>
-              </SheetContent>
-            </Sheet>
+            <MobileNav />
 
             {/* Desktop Navigation */}
             <nav className="hidden md:block">
               <ul className="flex gap-6">
                 <li>
                   <Link href="/art" className="hover:underline">
-                    Browse Art
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/places" className="hover:underline">
-                    Places
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:underline">
-                    Artists
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="hover:underline">
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/admin" className="hover:underline">
-                    Platform
+                    Art
                   </Link>
                 </li>
               </ul>

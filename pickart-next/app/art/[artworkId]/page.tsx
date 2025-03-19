@@ -1,14 +1,17 @@
-export const revalidate = 3600 // Revalidate every hour (3600 seconds)
+export const revalidate = 604800 // Revalidate every week (604800 seconds)
 
 import { getArtPieceById, getPublishedArtPieceIds } from "@/lib/art"
 import { notFound } from "next/navigation"
 import PurchaseButton from "@/components/purchase-button"
 import ArtDetails from "@/components/art-details"
 import ArtGallery from "@/components/art-gallery"
+import { Metadata } from "next"
 
 // Types for params
 type Params = {
-  artworkId: string
+  params: {
+    artworkId: string
+  }
 }
 
 // Generate static pages at build time
@@ -21,7 +24,7 @@ export async function generateStaticParams() {
 }
 
 // Generate metadata for SEO
-export async function generateMetadata({ params }: { params: Params }) {
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const art = await getArtPieceById(params.artworkId)
 
   if (!art) {
@@ -39,7 +42,7 @@ export async function generateMetadata({ params }: { params: Params }) {
   }
 }
 
-export default async function ArtPiecePage({ params }: { params: Params }) {
+export default async function ArtPiecePage({ params }: Params) {
   const art = await getArtPieceById(params.artworkId)
 
   if (!art || !art.published) {
@@ -75,4 +78,3 @@ export default async function ArtPiecePage({ params }: { params: Params }) {
     </div>
   )
 }
-

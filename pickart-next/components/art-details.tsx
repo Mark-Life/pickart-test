@@ -1,4 +1,6 @@
-export default function ArtDetails({ art }) {
+import { ArtworkWithDetails } from "@/lib/art";
+
+export default function ArtDetails({ art }: { art: ArtworkWithDetails }) {
   return (
     <div className="mt-8">
       <h2 className="text-xl font-semibold mb-2">Details</h2>

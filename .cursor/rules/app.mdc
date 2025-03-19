@@ -19,3 +19,9 @@ Root folder is for general project documentation.
 - Shadcn/ui: UI components
 - Vercel: hosting
 - Stripe: payment
+
+## instuctions
+
+- try to use components. pages for showing diffenet components based on routing, roles and so on
+ - note you can use server components and return the user already prepeared component so it will be easer for users
+ - there are things like "use server"; "use client" and so on
