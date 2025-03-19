@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Loader2, CheckCircle, XCircle, UserPlus } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
+import { getUserRegistrationApprovals, approveUserRegistration, rejectUserRegistration } from '@/app/actions'
 
 interface RegistrationApproval {
   id: string
@@ -30,19 +31,12 @@ export default function AdminApprovalsPage() {
   const fetchPendingApprovals = async () => {
     setIsLoading(true)
     try {
-      // Get pending approvals
-      const { data, error } = await supabase
-        .from("registration_approvals")
-        .select(`
-          *,
-          user:users(first_name, last_name, email)
-        `)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false })
-
+      // Use server action instead of direct client call
+      const { data, error } = await getUserRegistrationApprovals()
+      
       if (error) throw error
       
-      console.log("Pending approvals:", data)
+      console.log("Pending approvals from server:", data)
       setPendingApprovals(data || [])
     } catch (error) {
       console.error("Error fetching approvals:", error)
@@ -63,24 +57,17 @@ export default function AdminApprovalsPage() {
   const handleApprove = async (approvalId: string, userId: string) => {
     setProcessingId(approvalId)
     try {
-      // Get session to get current user ID
+      // Get current admin ID
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session) {
         throw new Error("Not authenticated")
       }
       
-      // Update approval status
-      const { error: approvalError } = await supabase
-        .from("registration_approvals")
-        .update({
-          status: "approved",
-          approved_by: session.user.id,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", approvalId)
+      // Use server action
+      const { success, error } = await approveUserRegistration(approvalId, session.user.id)
       
-      if (approvalError) throw approvalError
+      if (!success) throw error
       
       toast({
         title: "Approved",
@@ -105,24 +92,17 @@ export default function AdminApprovalsPage() {
   const handleReject = async (approvalId: string) => {
     setProcessingId(approvalId)
     try {
-      // Get session to get current user ID
+      // Get current admin ID
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session) {
         throw new Error("Not authenticated")
       }
       
-      // Update approval status
-      const { error: approvalError } = await supabase
-        .from("registration_approvals")
-        .update({
-          status: "rejected",
-          approved_by: session.user.id,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", approvalId)
+      // Use server action
+      const { success, error } = await rejectUserRegistration(approvalId, session.user.id)
       
-      if (approvalError) throw approvalError
+      if (!success) throw error
       
       toast({
         title: "Rejected",

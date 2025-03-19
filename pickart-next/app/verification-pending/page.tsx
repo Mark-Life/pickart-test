@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
+import { checkUserVerificationStatus } from '@/app/actions'
 
 interface RegistrationInfo {
   email: string | null
@@ -44,44 +45,28 @@ export default function VerificationPending() {
           setUserEmail(session.user.email)
         }
         
-        // Get registration approval status
-        const { data: approvalData, error: approvalError } = await supabase
-          .from("registration_approvals")
-          .select("*")
-          .eq("user_id", session.user.id)
-          .single()
+        // Use server action to check verification status without RLS issues
+        const { approval, user, error } = await checkUserVerificationStatus(session.user.id)
         
-        if (approvalError && approvalError.code !== 'PGRST116') {
-          console.error("Error fetching approval status:", approvalError)
-        }
+        console.log("Approval data from server:", approval)
+        console.log("User data from server:", user)
         
-        console.log("Approval data:", approvalData) // Debug
-        
-        // Check if the user exists in the users table
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", session.user.id)
-          .single()
-        
-        console.log("User data:", userData) // Debug
-        
-        if (userError) {
-          console.error("Error fetching user data:", userError)
+        if (error) {
+          console.error("Error checking verification status:", error)
         }
         
         // Extract role from approval data or user data
         let roleValue = null
-        if (approvalData && approvalData.requested_role) {
-          roleValue = approvalData.requested_role
-        } else if (userData && userData.role) {
-          roleValue = userData.role
+        if (approval && approval.requested_role) {
+          roleValue = approval.requested_role
+        } else if (user && user.role) {
+          roleValue = user.role
         }
         
         // Extract status from approval data
         let statusValue = null
-        if (approvalData && approvalData.status) {
-          statusValue = approvalData.status
+        if (approval && approval.status) {
+          statusValue = approval.status
         }
         
         setRegistrationInfo({
@@ -91,8 +76,8 @@ export default function VerificationPending() {
         })
         
         // If approval is approved and user exists in users table, redirect to dashboard
-        if (approvalData?.status === 'approved' && userData) {
-          const role = userData.role || 'user'
+        if (approval?.status === 'approved' && user) {
+          const role = user.role || 'user'
           redirectToDashboard(role)
         }
       } catch (error) {
