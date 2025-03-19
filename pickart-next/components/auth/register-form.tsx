@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
@@ -12,15 +12,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "@/hooks/use-toast"
-import { Eye, EyeOff } from "lucide-react"
 
-export default function RegisterForm() {
+function RegisterFormContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
-    password: "",
     firstName: "",
     lastName: "",
     role: "artist" as "artist" | "host",
@@ -40,11 +39,23 @@ export default function RegisterForm() {
     setIsLoading(true)
 
     try {
-      // Register the user with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // First, store the user metadata in local storage so we can retrieve it after magic link auth
+      localStorage.setItem(
+        "pickart_registration", 
+        JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          role: formData.role,
+          email: formData.email
+        })
+      )
+
+      // Send magic link for registration
+      const { error } = await supabase.auth.signInWithOtp({
         email: formData.email,
-        password: formData.password,
         options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/register/complete`,
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,
@@ -53,33 +64,14 @@ export default function RegisterForm() {
         },
       })
 
-      if (authError) throw authError
+      if (error) throw error
 
-      // Create a profile record in the profiles table
-      if (authData.user) {
-        const { error: profileError } = await supabase.from("profiles").insert([
-          {
-            id: authData.user.id,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            email: formData.email,
-            role: formData.role,
-            display_name: `${formData.firstName} ${formData.lastName}`,
-            created_at: new Date().toISOString(),
-          },
-        ])
-
-        if (profileError) throw profileError
-      }
-
+      setMagicLinkSent(true)
       toast({
-        title: "Registration successful",
+        title: "Verification email sent",
         description: "Please check your email to confirm your account.",
         variant: "default",
       })
-
-      // Redirect to login page
-      router.push("/login")
     } catch (error: any) {
       toast({
         title: "Registration failed",
@@ -89,6 +81,29 @@ export default function RegisterForm() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (magicLinkSent) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>Check your email</CardTitle>
+          <CardDescription>We've sent a verification link to {formData.email}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-center text-muted-foreground">
+            Click the link in your email to verify and complete your account registration.
+          </p>
+          <Button 
+            className="w-full" 
+            variant="outline" 
+            onClick={() => setMagicLinkSent(false)}
+          >
+            Back to registration
+          </Button>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -151,31 +166,6 @@ export default function RegisterForm() {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                minLength={8}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </Button>
-            </div>
-          </div>
-
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Creating account..." : "Create account"}
           </Button>
@@ -190,6 +180,22 @@ export default function RegisterForm() {
         </p>
       </CardFooter>
     </Card>
+  )
+}
+
+export default function RegisterForm() {
+  return (
+    <Suspense fallback={
+      <Card className="w-full max-w-md mx-auto">
+        <CardContent className="pt-6">
+          <div className="text-center">
+            <p>Loading...</p>
+          </div>
+        </CardContent>
+      </Card>
+    }>
+      <RegisterFormContent />
+    </Suspense>
   )
 }
 

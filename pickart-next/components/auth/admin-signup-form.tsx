@@ -10,7 +10,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/hooks/use-toast"
-import { Eye, EyeOff } from "lucide-react"
 
 function AdminSignupFormContent() {
   const router = useRouter()
@@ -21,11 +20,10 @@ function AdminSignupFormContent() {
   const [isValidating, setIsValidating] = useState(true)
   const [isValidToken, setIsValidToken] = useState(false)
   const [inviteEmail, setInviteEmail] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
+  const [magicLinkSent, setMagicLinkSent] = useState(false)
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    password: "",
   })
 
   useEffect(() => {
@@ -74,11 +72,23 @@ function AdminSignupFormContent() {
     setIsLoading(true)
 
     try {
-      // Register the admin user with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // Store admin data in localStorage for retrieval after magic link auth
+      localStorage.setItem(
+        "pickart_admin_registration",
+        JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          inviteToken: token,
+          role: "admin"
+        })
+      )
+
+      // Send magic link for admin signup
+      const { error } = await supabase.auth.signInWithOtp({
         email: inviteEmail,
-        password: formData.password,
         options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/admin-signup/complete`,
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,
@@ -87,41 +97,14 @@ function AdminSignupFormContent() {
         },
       })
 
-      if (authError) throw authError
+      if (error) throw error
 
-      // Create a profile record in the profiles table
-      if (authData.user) {
-        const { error: profileError } = await supabase.from("profiles").insert([
-          {
-            id: authData.user.id,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            email: inviteEmail,
-            role: "admin",
-            display_name: `${formData.firstName} ${formData.lastName}`,
-            created_at: new Date().toISOString(),
-          },
-        ])
-
-        if (profileError) throw profileError
-
-        // Mark the invite as used
-        const { error: inviteError } = await supabase
-          .from("admin_invites")
-          .update({ used_at: new Date().toISOString() })
-          .eq("invite_token", token)
-
-        if (inviteError) throw inviteError
-      }
-
+      setMagicLinkSent(true)
       toast({
-        title: "Account created",
-        description: "Your admin account has been created successfully.",
+        title: "Verification email sent",
+        description: "Please check your email to confirm your account.",
         variant: "default",
       })
-
-      // Redirect to login page
-      router.push("/login")
     } catch (error: any) {
       toast({
         title: "Registration failed",
@@ -155,6 +138,29 @@ function AdminSignupFormContent() {
         <CardContent>
           <Button onClick={() => router.push("/")} className="w-full">
             Return to Home
+          </Button>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (magicLinkSent) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>Check your email</CardTitle>
+          <CardDescription>We've sent a verification link to {inviteEmail}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-center text-muted-foreground">
+            Click the link in your email to verify and complete your admin account setup.
+          </p>
+          <Button 
+            className="w-full" 
+            variant="outline" 
+            onClick={() => setMagicLinkSent(false)}
+          >
+            Back to signup
           </Button>
         </CardContent>
       </Card>
@@ -197,31 +203,6 @@ function AdminSignupFormContent() {
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" value={inviteEmail} disabled className="bg-gray-100" />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                minLength={8}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </Button>
-            </div>
           </div>
 
           <Button type="submit" className="w-full" disabled={isLoading}>

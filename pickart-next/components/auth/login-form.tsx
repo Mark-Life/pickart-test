@@ -10,18 +10,14 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/hooks/use-toast"
-import { Eye, EyeOff } from "lucide-react"
-import { signIn, resetPassword } from "@/app/auth/actions"
+import { supabase } from "@/lib/supabase"
 
 function LoginFormContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [formState, setFormState] = useState({
-    email: "",
-    password: "",
-  })
+  const [email, setEmail] = useState("")
+  const [magicLinkSent, setMagicLinkSent] = useState(false)
 
   // Check for query params
   useEffect(() => {
@@ -33,11 +29,45 @@ function LoginFormContent() {
         variant: "destructive",
       })
     }
+    
+    const token_hash = searchParams.get("token_hash")
+    const type = searchParams.get("type")
+    
+    if (token_hash && type) {
+      verifyMagicLink(token_hash, type)
+    }
   }, [searchParams])
+  
+  const verifyMagicLink = async (token_hash: string, type: string) => {
+    setIsLoading(true)
+    try {
+      const { error } = await supabase.auth.verifyOtp({ 
+        token_hash, 
+        type: type as any 
+      })
+      
+      if (error) throw error
+      
+      toast({
+        title: "Success",
+        description: "You've been signed in successfully.",
+        variant: "default",
+      })
+      
+      router.push("/dashboard")
+    } catch (error: any) {
+      toast({
+        title: "Authentication error",
+        description: error.message || "Failed to verify magic link",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormState((prev) => ({ ...prev, [name]: value }))
+    setEmail(e.target.value)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,23 +75,26 @@ function LoginFormContent() {
     setIsLoading(true)
 
     try {
-      const formData = new FormData()
-      formData.append('email', formState.email)
-      formData.append('password', formState.password)
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
+      })
       
-      const result = await signIn(formData)
+      if (error) throw error
       
-      if (result?.error) {
-        toast({
-          title: "Login failed",
-          description: result.error,
-          variant: "destructive",
-        })
-      }
+      setMagicLinkSent(true)
+      toast({
+        title: "Magic link sent",
+        description: "Check your email for the login link.",
+        variant: "default",
+      })
     } catch (error: any) {
       toast({
         title: "Login failed",
-        description: error.message || "Invalid email or password.",
+        description: error.message || "Failed to send magic link.",
         variant: "destructive",
       })
     } finally {
@@ -69,53 +102,34 @@ function LoginFormContent() {
     }
   }
 
-  const handleResetPassword = async () => {
-    if (!formState.email) {
-      toast({
-        title: "Email required",
-        description: "Please enter your email address to reset your password.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      const formData = new FormData()
-      formData.append('email', formState.email)
-      
-      const result = await resetPassword(formData)
-      
-      if (result?.error) {
-        toast({
-          title: "Failed to send reset email",
-          description: result.error,
-          variant: "destructive",
-        })
-      } else if (result?.success) {
-        toast({
-          title: "Password reset email sent",
-          description: result.success,
-          variant: "destructive",
-        })
-      }
-    } catch (error: any) {
-      toast({
-        title: "Failed to send reset email",
-        description: error.message || "An error occurred.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
+  if (magicLinkSent) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>Check your email</CardTitle>
+          <CardDescription>We've sent a magic link to {email}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-center text-muted-foreground">
+            Click the link in your email to sign in to your account.
+          </p>
+          <Button 
+            className="w-full" 
+            variant="outline" 
+            onClick={() => setMagicLinkSent(false)}
+          >
+            Back to sign in
+          </Button>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <CardTitle>Sign In</CardTitle>
-        <CardDescription>Sign in to your PickArt account</CardDescription>
+        <CardDescription>Sign in to your PickArt account with a magic link</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -126,49 +140,14 @@ function LoginFormContent() {
               name="email"
               type="email"
               placeholder="john.doe@example.com"
-              value={formState.email}
+              value={email}
               onChange={handleChange}
               required
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <Label htmlFor="password">Password</Label>
-              <Button
-                type="button"
-                variant="link"
-                size="sm"
-                className="px-0 h-auto font-normal"
-                onClick={handleResetPassword}
-              >
-                Forgot password?
-              </Button>
-            </div>
-            <div className="relative">
-              <Input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                value={formState.password}
-                onChange={handleChange}
-                required
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </Button>
-            </div>
-          </div>
-
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Signing in..." : "Sign in"}
+            {isLoading ? "Sending magic link..." : "Send magic link"}
           </Button>
         </form>
       </CardContent>

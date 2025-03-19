@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import type { CookieOptions } from '@supabase/ssr'
 
 // Server-side Supabase client (for server components)
-export const createClient = () => {
+export const createClient = async () => {
   const cookieStore = cookies()
   
   return createServerClient(
@@ -28,14 +28,14 @@ export const createClient = () => {
 
 // Helper function to get the current user server-side
 export async function getCurrentUser() {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data } = await supabase.auth.getUser()
   return data?.user
 }
 
 // Helper function to get the user's profile server-side
 export async function getUserProfile(userId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data, error } = await supabase.from("users").select("*").eq("id", userId).single()
 
   if (error) {
@@ -48,7 +48,7 @@ export async function getUserProfile(userId: string) {
 
 // Helper function to get the user's role server-side
 export async function getUserRole(userId: string) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data, error } = await supabase.from("users").select("role").eq("id", userId).single()
 
   if (error) {
