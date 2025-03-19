@@ -1,7 +1,8 @@
+"use client"
+
 import type React from "react"
-import type { Metadata } from "next"
+
 import Link from "next/link"
-import { redirect } from "next/navigation"
 import {
   Palette,
   Users,
@@ -12,29 +13,10 @@ import {
   ArrowUpDown,
   UserCircle,
   Settings,
+  LogOut,
 } from "lucide-react"
-import SignOutButton from "@/components/auth/sign-out-button"
-import { getCurrentUser, getUserRole } from "@/lib/supabase/server"
 
-export const metadata: Metadata = {
-  title: "Admin Dashboard | PickArt",
-  description: "Manage artworks, spots, properties, and users in the PickArt platform",
-}
-
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  // Check if user is authenticated and is an admin
-  const user = await getCurrentUser()
-  
-  if (!user) {
-    redirect("/login")
-  }
-  
-  const role = await getUserRole(user.id)
-  
-  if (role !== "admin") {
-    redirect("/dashboard")
-  }
-
+export default function AdminLayoutClient({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
@@ -118,11 +100,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   <Settings className="mr-3 h-5 w-5 text-gray-500" />
                   Settings
                 </Link>
-                <SignOutButton
-                  variant="ghost"
-                  className="w-full justify-start text-left group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100 text-red-600"
-                  redirectTo="/login"
-                />
+                <button
+                  className="w-full text-left group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100 text-red-600"
+                  onClick={() => {
+                    // Sign out logic
+                  }}
+                >
+                  <LogOut className="mr-3 h-5 w-5" />
+                  Sign Out
+                </button>
               </div>
             </nav>
           </div>

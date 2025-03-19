@@ -179,7 +179,7 @@ export default function HomePage() {
             <Button asChild size="lg" variant="secondary" className="text-primary text-lg">
               <Link href="/art">Browse Art</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="text-lg border-white text-white bg-gray-900 hover:bg-white">
+            <Button asChild size="lg" variant="outline" className="text-lg border-white text-white hover:bg-white/20">
               <Link href="/places">Explore Spaces</Link>
             </Button>
           </div>

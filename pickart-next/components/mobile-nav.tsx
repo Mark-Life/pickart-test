@@ -13,7 +13,8 @@ export function MobileNav() {
     { href: "/art", label: "Browse Art" },
     { href: "/places", label: "Places" },
     { href: "#", label: "Artists" },
-    { href: "/admin", label: "Admin" },
+    { href: "#", label: "About" },
+    { href: "/admin", label: "Platform" },
   ]
 
   return (

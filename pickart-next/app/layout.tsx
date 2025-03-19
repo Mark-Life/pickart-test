@@ -11,7 +11,6 @@ export const metadata = {
   title: "PickArt | Discover and Purchase Unique Art",
   description:
     "PickArt is a platform for discovering and purchasing unique art pieces from talented artists around the world.",
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -52,14 +51,14 @@ export default function RootLayout({
                         Artists
                       </Link>
                     </li>
-                    {/* <li>
+                    <li>
                       <Link href="#" className="text-lg">
                         About
                       </Link>
-                    </li> */}
+                    </li>
                     <li>
                       <Link href="/admin" className="text-lg">
-                        Admin
+                        Platform
                       </Link>
                     </li>
                   </ul>
@@ -85,14 +84,14 @@ export default function RootLayout({
                     Artists
                   </Link>
                 </li>
-                {/* <li>
+                <li>
                   <Link href="#" className="hover:underline">
                     About
                   </Link>
-                </li> */}
+                </li>
                 <li>
                   <Link href="/admin" className="hover:underline">
-                    Admin
+                    Platform
                   </Link>
                 </li>
               </ul>
@@ -110,6 +109,3 @@ export default function RootLayout({
   )
 }
 
-
-
-import './globals.css'

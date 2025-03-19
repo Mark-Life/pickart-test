@@ -1,10 +1,4 @@
-import { ArtworkWithDetails } from "@/lib/art"
-
-type ArtDetailsProps = {
-  art: ArtworkWithDetails
-}
-
-export default function ArtDetails({ art }: ArtDetailsProps) {
+export default function ArtDetails({ art }) {
   return (
     <div className="mt-8">
       <h2 className="text-xl font-semibold mb-2">Details</h2>
@@ -19,7 +13,7 @@ export default function ArtDetails({ art }: ArtDetailsProps) {
         </div>
         <div>
           <p className="text-gray-500">Style</p>
-          <p>{art.style || 'Not specified'}</p>
+          <p>{art.style}</p>
         </div>
         <div>
           <p className="text-gray-500">Year</p>
