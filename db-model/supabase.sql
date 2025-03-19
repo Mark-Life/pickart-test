@@ -276,7 +276,8 @@ CREATE TABLE registration_approvals (
   status TEXT NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),
   notes TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  requested_role public.user_role not null,
 );
 
 -- Property admin users (many-to-many)

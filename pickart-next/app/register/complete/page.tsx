@@ -81,6 +81,19 @@ export default function RegistrationComplete() {
           if (hostError) throw hostError
         }
         
+        // Create registration approval record
+        const { error: approvalError } = await supabase
+          .from('registration_approvals')
+          .insert({
+            user_id: session.user.id,
+            status: 'pending',
+            requested_role: registrationData.role,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          
+        if (approvalError) throw approvalError
+        
         // Clear the registration data
         localStorage.removeItem("pickart_registration")
         
@@ -92,15 +105,9 @@ export default function RegistrationComplete() {
         
         setIsComplete(true)
         
-        // Redirect based on user role
+        // Redirect to verification pending page instead of dashboard
         setTimeout(() => {
-          if (registrationData.role === "artist") {
-            router.push("/artist/dashboard")
-          } else if (registrationData.role === "host") {
-            router.push("/host/dashboard") 
-          } else {
-            router.push("/dashboard")
-          }
+          router.push("/verification-pending")
         }, 2000)
       } catch (error: any) {
         console.error("Registration completion error:", error)
@@ -135,7 +142,7 @@ export default function RegistrationComplete() {
             {isLoading ? (
               <p>Please wait while we complete your registration...</p>
             ) : isComplete ? (
-              <p>Your account has been created successfully. Redirecting to dashboard...</p>
+              <p>Your account has been created successfully. Redirecting to verification page...</p>
             ) : (
               <p>There was an error completing your registration. Returning to registration page...</p>
             )}
