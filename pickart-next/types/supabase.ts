@@ -6,6 +6,8 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+export type UserRole = 'admin' | 'artist' | 'host'
+
 export interface Database {
   public: {
     Tables: {
@@ -35,7 +37,7 @@ export interface Database {
           phone: string
           address: string
           country_code: string
-          role: 'admin' | 'artist' | 'host'
+          role: UserRole
           created_at: string
           updated_at: string
         }
@@ -47,7 +49,7 @@ export interface Database {
           phone: string
           address: string
           country_code: string
-          role: 'admin' | 'artist' | 'host'
+          role: UserRole
           created_at?: string
           updated_at?: string
         }
@@ -59,9 +61,41 @@ export interface Database {
           phone?: string
           address?: string
           country_code?: string
-          role?: 'admin' | 'artist' | 'host'
+          role?: UserRole
           created_at?: string
           updated_at?: string
+        }
+      }
+      registration_approvals: {
+        Row: {
+          id: string
+          user_id: string
+          approved_by: string | null
+          status: 'pending' | 'approved' | 'rejected'
+          notes: string | null
+          created_at: string
+          updated_at: string
+          requested_role: UserRole
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          approved_by?: string | null
+          status: 'pending' | 'approved' | 'rejected'
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+          requested_role: UserRole
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          approved_by?: string | null
+          status?: 'pending' | 'approved' | 'rejected'
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+          requested_role?: UserRole
         }
       }
       artists: {

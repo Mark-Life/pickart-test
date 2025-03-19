@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { getUserRole } from '@/lib/auth/roles'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -12,6 +13,10 @@ export default async function ProfilePage() {
     // If not authenticated, redirect to login
     redirect('/platform/login')
   }
+  
+  // Get user role and approval status
+  const userWithRole = await getUserRole(user)
+  const { role, approved } = userWithRole
   
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -36,6 +41,15 @@ export default async function ProfilePage() {
           </p>
           <p className="text-gray-600">
             <strong>Last Sign In:</strong> {new Date(user.last_sign_in_at || '').toLocaleString()}
+          </p>
+          <p className="text-gray-600">
+            <strong>Role:</strong> {role || 'Not assigned'}
+          </p>
+          <p className="text-gray-600">
+            <strong>Status:</strong> {
+              role === 'unknown' ? 'No role assigned' :
+              approved ? 'Approved' : 'Pending Approval'
+            }
           </p>
         </div>
       </div>
