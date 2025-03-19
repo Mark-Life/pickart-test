@@ -37,6 +37,11 @@ export default function RootLayout({
                     Art
                   </Link>
                 </li>
+                <li>
+                  <Link href="/platform" className="hover:underline">
+                    Platform
+                  </Link>
+                </li>
               </ul>
             </nav>
           </div>

@@ -11,10 +11,10 @@
 
 2. [ ] User Authentication (Epic 1)
     we use only invitation method via supabase, and admin can sign it
-   1. [ ] Setup Supabase Auth with Next.js
-   2. [ ] Implement Admin User Management Dashboard
-      1. [ ] User Approval System
-      2. [ ] User Management Interface
+   1. [x] Setup Supabase Auth with Next.js
+      1. [x] protect platform
+   2. [ ] implement role based
+      1. [ ] simple text that only Host can see, simple text that only Artist can see, admin can see all of components, some componenes excluseve only for admin
 
 3. [ ] Artwork Management (Epic 2)
    1. [ ] Create Artwork Upload Interface
