@@ -10,7 +10,7 @@ import { toast } from "@/hooks/use-toast"
 
 interface RegistrationInfo {
   email: string | null
-  role: string | null | undefined
+  role: string | null
   status: string | null
 }
 
@@ -47,7 +47,7 @@ export default function VerificationPending() {
         // Get registration approval status
         const { data: approvalData, error: approvalError } = await supabase
           .from("registration_approvals")
-          .select("status, requested_role")
+          .select("*")
           .eq("user_id", session.user.id)
           .single()
         
@@ -55,15 +55,34 @@ export default function VerificationPending() {
           console.error("Error fetching approval status:", approvalError)
         }
         
+        console.log("Approval data:", approvalData) // Debug
+        
         // Check if the user exists in the users table
         const { data: userData, error: userError } = await supabase
           .from("users")
-          .select("id, role")
+          .select("*")
           .eq("id", session.user.id)
           .single()
         
-        const roleValue = approvalData?.requested_role || (userData?.role || null)
-        const statusValue = approvalData?.status || null
+        console.log("User data:", userData) // Debug
+        
+        if (userError) {
+          console.error("Error fetching user data:", userError)
+        }
+        
+        // Extract role from approval data or user data
+        let roleValue = null
+        if (approvalData && approvalData.requested_role) {
+          roleValue = approvalData.requested_role
+        } else if (userData && userData.role) {
+          roleValue = userData.role
+        }
+        
+        // Extract status from approval data
+        let statusValue = null
+        if (approvalData && approvalData.status) {
+          statusValue = approvalData.status
+        }
         
         setRegistrationInfo({
           email: session.user.email ?? null,

@@ -69,6 +69,9 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
                 <Users className="mr-3 h-5 w-5 text-gray-500" />
                 Users
               </Link>
+              <Link href="/admin/approvals" className="flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100 pl-10">
+                Pending Approvals
+              </Link>
               <Link href="/admin/artworks" className="flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100">
                 <PaintBucket className="mr-3 h-5 w-5 text-gray-500" />
                 Artworks

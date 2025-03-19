@@ -88,8 +88,6 @@ export default function RegistrationComplete() {
             user_id: session.user.id,
             status: 'pending',
             requested_role: registrationData.role,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
           })
           
         if (approvalError) throw approvalError
