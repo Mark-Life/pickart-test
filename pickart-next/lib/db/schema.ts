@@ -205,6 +205,7 @@ export const registrationApprovals = pgTable("registration_approvals", {
   approvedBy: uuid("approved_by").references(() => users.id),
   status: registrationStatusEnum("status").notNull(),
   notes: text("notes"),
+  requestedRole: userRoleEnum("requested_role").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 })

@@ -62,8 +62,8 @@ export default function VerificationPending() {
           .eq("id", session.user.id)
           .single()
         
-        const roleValue = approvalData ? approvalData.requested_role : (userData ? userData.role : null)
-        const statusValue = approvalData ? approvalData.status : null
+        const roleValue = approvalData?.requested_role || (userData?.role || null)
+        const statusValue = approvalData?.status || null
         
         setRegistrationInfo({
           email: session.user.email ?? null,
