@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   if (!art) {
     return {
       title: "Art Not Found | PickArt",
+      description: "The artwork you're looking for could not be found."
     }
   }
 

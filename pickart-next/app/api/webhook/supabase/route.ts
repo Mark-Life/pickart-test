@@ -19,18 +19,18 @@ export async function POST(request: NextRequest) {
     const eventType = body.type // INSERT, UPDATE, DELETE
     const record = body.record
 
-    // Only process art_pieces table events
-    if (table === "art_pieces") {
-      const artId = record?.id
+    // Only process artworks table events (previously art_pieces)
+    if (table === "artworks") {
+      const artworkId = record?.artwork_id
 
-      if (artId) {
+      if (artworkId) {
         // Revalidate the specific art page
-        revalidatePath(`/art/${artId}`)
+        revalidatePath(`/art/${artworkId}`)
 
         // Also revalidate the art listing page
         revalidatePath("/art")
 
-        console.log(`Revalidated paths for art piece ${artId}`)
+        console.log(`Revalidated paths for artwork ${artworkId}`)
       }
     }
 
