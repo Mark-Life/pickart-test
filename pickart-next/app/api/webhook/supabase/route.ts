@@ -1,17 +1,26 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
-import { createHmac } from "crypto"
+import { createHmac, timingSafeEqual } from "crypto"
 
 // Verify Supabase webhook signature
-function verifySignature(signature: string | null, secret: string | undefined): boolean {
+function verifySignature(payload: string, signature: string | null, secret: string | undefined): boolean {
   if (!signature || !secret) return false
   
   try {
-    const payload = JSON.stringify(Buffer.from(signature, 'utf8'))
-    const hmac = createHmac('sha256', secret)
-    const digest = hmac.update(payload).digest('hex')
+    // For testing without signature verification
+    if (process.env.NODE_ENV === 'development' && process.env.SKIP_WEBHOOK_VERIFICATION === 'true') {
+      return true
+    }
     
-    return signature === digest
+    // Calculate HMAC using SHA-256
+    const hmac = createHmac('sha256', secret)
+    const expectedSignature = hmac.update(payload).digest('hex')
+    
+    // Use constant-time comparison to prevent timing attacks
+    return timingSafeEqual(
+      Buffer.from(signature),
+      Buffer.from(expectedSignature)
+    )
   } catch (error) {
     console.error('Signature verification failed:', error)
     return false
@@ -22,19 +31,26 @@ function verifySignature(signature: string | null, secret: string | undefined): 
 // Configure this in your Supabase dashboard under Database > Webhooks
 
 export async function POST(request: NextRequest) {
-  // In production, verify the webhook signature
-  const signature = request.headers.get('x-supabase-signature');
-  if (!verifySignature(signature, process.env.SUPABASE_WEBHOOK_SECRET)) {
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+  // Check if webhook secret is configured
+  if (!process.env.REVALIDATE_WEBHOOK_SECRET) {
+    console.warn('REVALIDATE_WEBHOOK_SECRET is not set, skipping verification')
+  }
+
+  // Get raw payload text for signature verification
+  const payload = await request.text()
+  const payloadObj = JSON.parse(payload)
+
+  // Verify the webhook signature
+  const signature = request.headers.get('x-supabase-signature')
+  if (!verifySignature(payload, signature, process.env.REVALIDATE_WEBHOOK_SECRET)) {
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
   try {
-    const body = await request.json()
-
     // Extract information from the webhook payload
-    const table = body.table
-    const eventType = body.type // INSERT, UPDATE, DELETE
-    const record = body.record
+    const table = payloadObj.table
+    const eventType = payloadObj.type // INSERT, UPDATE, DELETE
+    const record = payloadObj.record
 
     // Only process artworks table events (previously art_pieces)
     if (table === "artworks") {

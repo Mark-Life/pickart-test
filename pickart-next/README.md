@@ -55,7 +55,32 @@ pickart-next/
 
 ## 🔄 Supabase Webhook Setup
 
-To enable real-time updates on the art pages when database changes occur:
+To enable secure, real-time updates on art pages when database changes occur:
+
+### 1. Generate a Webhook Secret
+
+Create a secure random secret that will be used to verify webhook authenticity:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Save the generated value for the next steps.
+
+### 2. Configure Environment Variables
+
+Add the webhook secret to your environment:
+
+```
+# .env.local for development
+SUPABASE_WEBHOOK_SECRET=your_generated_webhook_secret
+# Optional: Skip verification during development
+SKIP_WEBHOOK_VERIFICATION=true
+```
+
+For production, add the secret to your hosting provider's environment variables (Vercel, Netlify, etc.).
+
+### 3. Create the Webhook in Supabase
 
 1. Go to your Supabase dashboard
 2. Navigate to `Database` > `Webhooks`
@@ -63,19 +88,66 @@ To enable real-time updates on the art pages when database changes occur:
    - **Name**: `ArtworkUpdates`
    - **Table**: `artworks`
    - **Events**: Check `INSERT`, `UPDATE`, and `DELETE`
-   - **Type**: `HTTP Request`
    - **HTTP Method**: `POST`
    - **URL**: `https://your-domain.com/api/webhook/supabase`
    - **Headers**: Add `x-supabase-signature` with your webhook secret
 
-4. In your environment variables, add the webhook secret:
-```
-SUPABASE_WEBHOOK_SECRET=your_webhook_secret
+### 4. Create a Database Function for Signing (Optional)
+
+If you want to create webhooks from your database, use this function:
+
+```sql
+CREATE OR REPLACE FUNCTION public.signed_webhook(webhook_url TEXT, payload JSONB) 
+RETURNS VOID SECURITY DEFINER AS $$
+DECLARE
+  secret_key TEXT;
+  headers_json JSONB;
+  payload_text TEXT;
+BEGIN
+  -- Get the secret key from vault or environment variable
+  SELECT decrypted_secret INTO secret_key 
+  FROM vault.decrypted_secrets 
+  WHERE name = 'webhook_secret_key' 
+  LIMIT 1;
+  
+  -- Convert payload to TEXT
+  payload_text := payload::TEXT;
+  
+  -- Generate signature using HMAC SHA-256
+  headers_json := jsonb_build_object(
+    'x-supabase-signature', 
+    encode(hmac(payload_text, secret_key, 'sha256'), 'hex'),
+    'Content-Type', 'application/json'
+  );
+  
+  -- Call the webhook
+  PERFORM net.http_post(
+    url := webhook_url,
+    body := payload,
+    headers := headers_json
+  );
+END;
+$$ LANGUAGE plpgsql;
 ```
 
-5. Uncomment the signature verification code in `app/api/webhook/supabase/route.ts` for production use
+### 5. Testing the Webhook
+
+To test locally with development server:
+
+```bash
+curl -X POST http://localhost:3000/api/webhook/supabase \
+  -H "Content-Type: application/json" \
+  -H "x-supabase-signature: your_webhook_secret_for_testing" \
+  -d '{"table":"artworks","type":"UPDATE","record":{"artwork_id":"AWCH-12345"}}'
+```
 
 When changes are made to the `artworks` table, the webhook will trigger revalidation of the related art pages, ensuring they always display the most up-to-date information.
+
+### Security Notes
+
+- The webhook implementation uses HMAC-SHA256 for signature verification
+- Timing-safe comparison is used to prevent timing attacks
+- In production, never log or expose your webhook secret
 
 ## 🧪 Testing
 
