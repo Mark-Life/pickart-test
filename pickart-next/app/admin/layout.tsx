@@ -1,27 +1,28 @@
-import type React from "react"
-import type { Metadata } from "next"
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import {
-  Palette,
-  Users,
-  MapPin,
+import { 
   LayoutDashboard,
-  QrCode,
+  Users,
+  PaintBucket,
   Building,
+  MapPin,
+  QrCode,
   ArrowUpDown,
-  UserCircle,
   Settings,
+  LogOut
 } from "lucide-react"
-import SignOutButton from "@/components/auth/sign-out-button"
-import { getCurrentUser, getUserRole } from "@/lib/supabase/server"
+import { getCurrentUser, createClient } from "@/lib/supabase/server"
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Admin Dashboard | PickArt",
-  description: "Manage artworks, spots, properties, and users in the PickArt platform",
+  description: "Manage art pieces, properties, spots, and users in the PickArt platform",
 }
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+interface AdminLayoutProps {
+  children: React.ReactNode
+}
+
+export default async function AdminLayout({ children }: AdminLayoutProps) {
   // Check if user is authenticated and is an admin
   const user = await getCurrentUser()
   
@@ -29,9 +30,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/login")
   }
   
-  const role = await getUserRole(user.id)
+  // Get user data from users table
+  const supabase = await createClient()
+  const { data: userData, error } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single()
   
-  if (role !== "admin") {
+  // Check if user exists in public.users table
+  if (error && error.code === 'PGRST116') {
+    // Record not found - user exists in auth but not in public.users table
+    redirect("/verification-pending")
+  }
+  
+  // Check if user has admin role
+  if (!userData || userData.role !== "admin") {
     redirect("/dashboard")
   }
 
@@ -45,84 +59,47 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               PickArt Admin
             </Link>
           </div>
-          <div className="mt-8 flex flex-col flex-1">
-            <nav className="flex-1 px-2 space-y-1">
-              <Link
-                href="/admin"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100"
-              >
+          <div className="flex flex-col flex-grow px-4 mt-5">
+            <nav className="flex-1 space-y-1">
+              <Link href="/admin" className="flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100">
                 <LayoutDashboard className="mr-3 h-5 w-5 text-gray-500" />
                 Dashboard
               </Link>
-              <Link
-                href="/admin/artworks"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100"
-              >
-                <Palette className="mr-3 h-5 w-5 text-gray-500" />
-                Artworks
-              </Link>
-              <Link
-                href="/admin/properties"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100"
-              >
-                <Building className="mr-3 h-5 w-5 text-gray-500" />
-                Properties
-              </Link>
-              <Link
-                href="/admin/spots"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100"
-              >
-                <MapPin className="mr-3 h-5 w-5 text-gray-500" />
-                Spots
-              </Link>
-              <Link
-                href="/admin/allocations"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100"
-              >
-                <ArrowUpDown className="mr-3 h-5 w-5 text-gray-500" />
-                Allocations
-              </Link>
-              <Link
-                href="/admin/users"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100"
-              >
+              <Link href="/admin/users" className="flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100">
                 <Users className="mr-3 h-5 w-5 text-gray-500" />
                 Users
               </Link>
-              <Link
-                href="/admin/users/admins"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100 pl-10"
-              >
-                Admin Users
+              <Link href="/admin/artworks" className="flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100">
+                <PaintBucket className="mr-3 h-5 w-5 text-gray-500" />
+                Artworks
               </Link>
-              <Link
-                href="/admin/qr-codes"
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100"
-              >
+              <Link href="/admin/properties" className="flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100">
+                <Building className="mr-3 h-5 w-5 text-gray-500" />
+                Properties
+              </Link>
+              <Link href="/admin/spots" className="flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100">
+                <MapPin className="mr-3 h-5 w-5 text-gray-500" />
+                Spots
+              </Link>
+              <Link href="/admin/qr-codes" className="flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100">
                 <QrCode className="mr-3 h-5 w-5 text-gray-500" />
                 QR Codes
               </Link>
-
-              <div className="pt-4 mt-4 border-t">
-                <Link
-                  href="/admin/profile"
-                  className="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100"
-                >
-                  <UserCircle className="mr-3 h-5 w-5 text-gray-500" />
-                  My Profile
-                </Link>
-                <Link
-                  href="/admin/settings"
-                  className="group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100"
-                >
+              <Link href="/admin/allocations" className="flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100">
+                <ArrowUpDown className="mr-3 h-5 w-5 text-gray-500" />
+                Allocations
+              </Link>
+              <div className="pt-4 pb-3 border-t border-gray-200">
+                <Link href="/admin/profile" className="flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100">
                   <Settings className="mr-3 h-5 w-5 text-gray-500" />
                   Settings
                 </Link>
-                <SignOutButton
-                  variant="ghost"
-                  className="w-full justify-start text-left group flex items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100 text-red-600"
-                  redirectTo="/login"
-                />
+                <form action="/api/auth/signout" method="post">
+                  <button className="flex w-full items-center px-2 py-2 text-sm font-medium rounded-md hover:bg-gray-100">
+                    <LogOut className="mr-3 h-5 w-5 text-gray-500" />
+                    Logout
+                  </button>
+                </form>
               </div>
             </nav>
           </div>
@@ -131,10 +108,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
       {/* Main content */}
       <div className="flex flex-col flex-1">
-        <main className="flex-1 pb-8">
-          <div className="py-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">{children}</div>
-          </div>
+        {/* Mobile menu implementation would go here */}
+        <main className="flex-1 overflow-y-auto bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+          {children}
         </main>
       </div>
     </div>

@@ -38,20 +38,24 @@ export default function AdminSignupComplete() {
         
         const registrationData = JSON.parse(storedData) as AdminRegistrationData
         
-        // Create a profile record in the profiles table
-        const { error: profileError } = await supabase.from("profiles").insert([
+        // Create a user record in the users table
+        const { error: userError } = await supabase.from("users").insert([
           {
             id: session.user.id,
             first_name: registrationData.firstName,
             last_name: registrationData.lastName,
             email: session.user.email,
             role: "admin",
-            display_name: `${registrationData.firstName} ${registrationData.lastName}`,
+            // Required fields for the users table
+            phone: "", // Default empty value for admin users
+            address: "", // Default empty value for admin users
+            country_code: null, // Default null value
             created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           },
         ])
 
-        if (profileError) throw profileError
+        if (userError) throw userError
         
         // Mark the invite as used
         const { error: inviteError } = await supabase

@@ -1,12 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "@/hooks/use-toast"
 
-export default function AuthCallback() {
+function AuthCallbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(true)
@@ -73,25 +73,36 @@ export default function AuthCallback() {
           }
           
           if (session) {
-            console.log('Auth Callback: Existing session found, checking user role')
+            console.log('Auth Callback: Existing session found, checking user record')
             
-            // Check user role to decide redirect
-            try {
-              const { data: profile } = await supabase
-                .from("profiles")
-                .select("role")
-                .eq("id", session.user.id)
-                .single()
+            // Check if user exists in the users table
+            const { data: user, error: userError } = await supabase
+              .from("users")
+              .select("role")
+              .eq("id", session.user.id)
+              .single()
               
-              if (profile?.role === "admin") {
-                console.log('Auth Callback: Admin user detected, redirecting to admin dashboard')
-                router.push('/admin')
-              } else {
-                console.log('Auth Callback: Regular user detected, redirecting to dashboard')
-                router.push('/dashboard')
-              }
-            } catch (err) {
-              console.error('Auth Callback: Error getting user role:', err)
+            if (userError && userError.code === 'PGRST116') {
+              // Record not found - user exists in auth but not in public.users table
+              console.log('Auth Callback: User not found in users table, redirecting to verification page')
+              router.push('/verification-pending')
+              return
+            } else if (userError) {
+              throw userError
+            }
+            
+            // User exists in public.users table, redirect based on role
+            if (user?.role === "admin") {
+              console.log('Auth Callback: Admin user detected, redirecting to admin dashboard')
+              router.push('/admin')
+            } else if (user?.role === "artist") {
+              console.log('Auth Callback: Artist user detected, redirecting to artist dashboard')
+              router.push('/artist/dashboard')
+            } else if (user?.role === "host") {
+              console.log('Auth Callback: Host user detected, redirecting to host dashboard')
+              router.push('/host/dashboard')
+            } else {
+              console.log('Auth Callback: Regular user detected, redirecting to dashboard')
               router.push('/dashboard')
             }
           } else {
@@ -140,5 +151,26 @@ export default function AuthCallback() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function AuthCallback() {
+  return (
+    <Suspense fallback={
+      <div className="container flex items-center justify-center min-h-screen py-12">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <div className="space-y-3">
+                <div className="animate-pulse h-6 w-24 bg-gray-200 rounded mx-auto"></div>
+                <p>Loading authentication...</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <AuthCallbackContent />
+    </Suspense>
   )
 } 

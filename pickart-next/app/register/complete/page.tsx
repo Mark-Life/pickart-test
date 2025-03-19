@@ -38,20 +38,48 @@ export default function RegistrationComplete() {
         
         const registrationData = JSON.parse(storedData) as UserRegistrationData
         
-        // Create a profile record in the profiles table
-        const { error: profileError } = await supabase.from("profiles").insert([
+        // Create a user record in the users table
+        const { error: userError } = await supabase.from("users").insert([
           {
             id: session.user.id,
             first_name: registrationData.firstName,
             last_name: registrationData.lastName,
             email: registrationData.email,
             role: registrationData.role,
-            display_name: `${registrationData.firstName} ${registrationData.lastName}`,
+            // Required fields for the users table
+            phone: "", // To be updated by user later
+            address: "", // To be updated by user later
+            country_code: null, // To be updated by user later
             created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           },
         ])
 
-        if (profileError) throw profileError
+        if (userError) throw userError
+
+        // Create additional records based on role
+        if (registrationData.role === "artist") {
+          const { error: artistError } = await supabase
+            .from('artists')
+            .insert({
+              user_id: session.user.id,
+              artist_type: 'artist',
+              display_name: `${registrationData.firstName} ${registrationData.lastName}`,
+              contract_signed: false
+            })
+            
+          if (artistError) throw artistError
+        } else if (registrationData.role === "host") {
+          const { error: hostError } = await supabase
+            .from('hosts')
+            .insert({
+              user_id: session.user.id,
+              host_type: 'host',
+              contract_signed: false
+            })
+            
+          if (hostError) throw hostError
+        }
         
         // Clear the registration data
         localStorage.removeItem("pickart_registration")
@@ -64,9 +92,15 @@ export default function RegistrationComplete() {
         
         setIsComplete(true)
         
-        // Redirect to dashboard after a short delay
+        // Redirect based on user role
         setTimeout(() => {
-          router.push("/dashboard")
+          if (registrationData.role === "artist") {
+            router.push("/artist/dashboard")
+          } else if (registrationData.role === "host") {
+            router.push("/host/dashboard") 
+          } else {
+            router.push("/dashboard")
+          }
         }, 2000)
       } catch (error: any) {
         console.error("Registration completion error:", error)

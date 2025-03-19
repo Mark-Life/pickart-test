@@ -1,6 +1,7 @@
-import { getCurrentUser, getUserProfile } from "@/lib/supabase/server"
+import { getCurrentUser } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { createClient } from "@/lib/supabase/server"
 
 export const metadata = {
   title: "Dashboard | PickArt",
@@ -14,10 +15,28 @@ export default async function Dashboard() {
     redirect("/login")
   }
   
-  // Redirect admin users to admin dashboard
-  const userProfile = await getUserProfile(user.id)
-  if (userProfile?.role === "admin") {
+  // Get user role from users table
+  const supabase = await createClient()
+  const { data: userData, error } = await supabase.from("users").select("role").eq("id", user.id).single()
+  
+  // Check if user exists in public.users table
+  if (error && error.code === 'PGRST116') {
+    // Record not found - user exists in auth but not in public.users table
+    redirect("/verification-pending")
+  } else if (error) {
+    // Other error occurred
+    console.error("Error fetching user data:", error)
+    // Still redirect to verification pending as a fallback
+    redirect("/verification-pending")
+  }
+  
+  // Redirect based on user role
+  if (userData?.role === "admin") {
     redirect("/admin")
+  } else if (userData?.role === "artist") {
+    redirect("/artist/dashboard")
+  } else if (userData?.role === "host") {
+    redirect("/host/dashboard")
   }
   
   return (
