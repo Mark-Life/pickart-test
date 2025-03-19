@@ -7,6 +7,7 @@
 - [TypeScript](https://www.typescriptlang.org/) - Static type checking
 - [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
 - [pnpm](https://pnpm.io/) - Fast, disk space efficient package manager
+- [Supabase](https://supabase.io/) - Open source Firebase alternative
 
 ## 📋 Prerequisites
 
@@ -51,6 +52,30 @@ pickart-next/
 ├── types/                 # TypeScript type definitions
 └── tests/                 # Test files
 ```
+
+## 🔄 Supabase Webhook Setup
+
+To enable real-time updates on the art pages when database changes occur:
+
+1. Go to your Supabase dashboard
+2. Navigate to `Database` > `Webhooks`
+3. Create a new webhook with the following settings:
+   - **Name**: `ArtworkUpdates`
+   - **Table**: `artworks`
+   - **Events**: Check `INSERT`, `UPDATE`, and `DELETE`
+   - **Type**: `HTTP Request`
+   - **HTTP Method**: `POST`
+   - **URL**: `https://your-domain.com/api/webhook/supabase`
+   - **Headers**: Add `x-supabase-signature` with your webhook secret
+
+4. In your environment variables, add the webhook secret:
+```
+SUPABASE_WEBHOOK_SECRET=your_webhook_secret
+```
+
+5. Uncomment the signature verification code in `app/api/webhook/supabase/route.ts` for production use
+
+When changes are made to the `artworks` table, the webhook will trigger revalidation of the related art pages, ensuring they always display the most up-to-date information.
 
 ## 🧪 Testing
 
