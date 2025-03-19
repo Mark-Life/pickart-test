@@ -110,4 +110,52 @@ export async function checkUserVerificationStatus(userId: string) {
     console.error('Error checking verification status:', error)
     return { approval: null, user: null, error }
   }
+}
+
+/**
+ * Check if a user is approved and can access their dashboard
+ */
+export async function isUserApproved(userId: string) {
+  try {
+    // First, get user data
+    const { data: userData, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single()
+    
+    if (userError) {
+      if (userError.code === 'PGRST116') {
+        // User doesn't exist in the users table
+        return { approved: false, user: null, error: null }
+      }
+      throw userError
+    }
+    
+    // Get approval data
+    const { data: approvalData, error: approvalError } = await supabaseAdmin
+      .from('registration_approvals')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+    
+    if (approvalError && approvalError.code !== 'PGRST116') {
+      console.error('Error fetching approval:', approvalError)
+    }
+    
+    // User is approved if they have an approval record with status 'approved'
+    // OR if they exist in the users table but don't have any approval record
+    // (legacy users or manually created users)
+    const isApproved = (approvalData && approvalData.status === 'approved') || 
+                      (userData && !approvalData);
+    
+    return {
+      approved: isApproved,
+      user: userData,
+      error: null
+    }
+  } catch (error) {
+    console.error('Error checking user approval:', error)
+    return { approved: false, user: null, error }
+  }
 } 

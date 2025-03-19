@@ -12,6 +12,7 @@ import {
   LogOut
 } from "lucide-react"
 import { getCurrentUser, createClient } from "@/lib/supabase/server"
+import { isUserApproved } from "@/app/actions"
 
 export const metadata = {
   title: "Admin Dashboard | PickArt",
@@ -30,22 +31,16 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
     redirect("/login")
   }
   
-  // Get user data from users table
-  const supabase = await createClient()
-  const { data: userData, error } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .single()
+  // Check if user is approved using the server action that bypasses RLS
+  const { approved, user: userData, error } = await isUserApproved(user.id)
   
-  // Check if user exists in public.users table
-  if (error && error.code === 'PGRST116') {
-    // Record not found - user exists in auth but not in public.users table
+  // Check if user exists in public.users table and is approved
+  if (!approved || !userData) {
     redirect("/verification-pending")
   }
   
   // Check if user has admin role
-  if (!userData || userData.role !== "admin") {
+  if (userData.role !== "admin") {
     redirect("/dashboard")
   }
 

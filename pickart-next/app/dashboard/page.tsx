@@ -2,6 +2,7 @@ import { getCurrentUser } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
+import { isUserApproved } from "@/app/actions"
 
 export const metadata = {
   title: "Dashboard | PickArt",
@@ -15,18 +16,11 @@ export default async function Dashboard() {
     redirect("/login")
   }
   
-  // Get user role from users table
-  const supabase = await createClient()
-  const { data: userData, error } = await supabase.from("users").select("role").eq("id", user.id).single()
+  // Check if user is approved using the server action that bypasses RLS
+  const { approved, user: userData, error } = await isUserApproved(user.id)
   
-  // Check if user exists in public.users table
-  if (error && error.code === 'PGRST116') {
-    // Record not found - user exists in auth but not in public.users table
-    redirect("/verification-pending")
-  } else if (error) {
-    // Other error occurred
-    console.error("Error fetching user data:", error)
-    // Still redirect to verification pending as a fallback
+  // If not approved, redirect to verification page
+  if (!approved || !userData) {
     redirect("/verification-pending")
   }
   
