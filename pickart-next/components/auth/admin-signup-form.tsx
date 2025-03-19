@@ -88,7 +88,7 @@ function AdminSignupFormContent() {
         email: inviteEmail,
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/admin-signup/complete`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/admin-signup/complete`,
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,

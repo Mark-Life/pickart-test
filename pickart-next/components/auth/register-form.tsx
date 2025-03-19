@@ -55,7 +55,7 @@ function RegisterFormContent() {
         email: formData.email,
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/register/complete`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/register/complete`,
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,
