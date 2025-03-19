@@ -73,8 +73,27 @@ export default function AuthCallback() {
           }
           
           if (session) {
-            console.log('Auth Callback: Existing session found, redirecting to dashboard')
-            router.push('/dashboard')
+            console.log('Auth Callback: Existing session found, checking user role')
+            
+            // Check user role to decide redirect
+            try {
+              const { data: profile } = await supabase
+                .from("profiles")
+                .select("role")
+                .eq("id", session.user.id)
+                .single()
+              
+              if (profile?.role === "admin") {
+                console.log('Auth Callback: Admin user detected, redirecting to admin dashboard')
+                router.push('/admin')
+              } else {
+                console.log('Auth Callback: Regular user detected, redirecting to dashboard')
+                router.push('/dashboard')
+              }
+            } catch (err) {
+              console.error('Auth Callback: Error getting user role:', err)
+              router.push('/dashboard')
+            }
           } else {
             console.log('Auth Callback: No session found, redirecting to login')
             setError("Missing authentication parameters")

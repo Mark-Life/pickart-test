@@ -74,7 +74,7 @@ export default function AdminSignupComplete() {
         
         // Redirect to admin dashboard after a short delay
         setTimeout(() => {
-          router.push("/admin/dashboard")
+          router.push("/admin")
         }, 2000)
       } catch (error: any) {
         console.error("Admin registration completion error:", error)
