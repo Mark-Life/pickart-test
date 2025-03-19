@@ -673,7 +673,7 @@ CREATE POLICY artist_artwork_update ON artworks FOR UPDATE
   USING (
     EXISTS (
       SELECT 1 FROM artists a 
-      WHERE a.id = artist_id 
+      WHERE a.id = artworks.artist_id 
       AND (
         a.user_id = auth.uid() OR
         EXISTS (
@@ -695,8 +695,9 @@ CREATE POLICY host_property_select ON properties FOR SELECT
       AND h.user_id = auth.uid()
     ) OR
     EXISTS (
-      SELECT 1 FROM property_admins 
-      WHERE property_id = properties.id AND user_id = auth.uid()
+      SELECT 1 FROM property_admins pa
+      JOIN hosts h ON h.id = pa.user_id
+      WHERE pa.property_id = properties.id AND h.user_id = auth.uid()
     ) OR
     EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
   );
@@ -711,10 +712,38 @@ CREATE POLICY host_spot_select ON spots FOR SELECT
       AND (
         h.user_id = auth.uid() OR
         EXISTS (
-          SELECT 1 FROM property_admins 
-          WHERE property_id = p.id AND user_id = auth.uid()
+          SELECT 1 FROM property_admins pa
+          JOIN hosts h2 ON h2.id = pa.user_id
+          WHERE pa.property_id = p.id AND h2.user_id = auth.uid()
         )
       )
+    ) OR
+    EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- Add RLS policies for Artists and Hosts
+CREATE POLICY artist_select_own ON artists FOR SELECT 
+  USING (user_id = auth.uid() OR EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
+  
+CREATE POLICY artist_update_own ON artists FOR UPDATE 
+  USING (user_id = auth.uid() OR EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
+
+CREATE POLICY host_select_own ON hosts FOR SELECT 
+  USING (user_id = auth.uid() OR EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
+  
+CREATE POLICY host_update_own ON hosts FOR UPDATE 
+  USING (user_id = auth.uid() OR EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin'));
+
+-- Fix property_admins references
+CREATE POLICY property_admin_select ON property_admins FOR SELECT 
+  USING (
+    EXISTS (
+      SELECT 1 FROM hosts h WHERE h.id = property_admins.user_id AND h.user_id = auth.uid()
+    ) OR
+    EXISTS (
+      SELECT 1 FROM hosts h 
+      JOIN properties p ON p.owner_id = h.id
+      WHERE p.id = property_admins.property_id AND h.user_id = auth.uid()
     ) OR
     EXISTS (SELECT 1 FROM users WHERE id = auth.uid() AND role = 'admin')
   );

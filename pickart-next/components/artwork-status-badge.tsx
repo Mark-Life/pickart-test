@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge"
 
-type ArtworkStatus = "DRAFT" | "PENDING" | "READY" | "ALLOCATED" | "DELIVERED" | "LIVE"
+export type ArtworkStatus = "DRAFT" | "PENDING" | "READY" | "ALLOCATED" | "DELIVERED" | "LIVE"
 
 interface ArtworkStatusBadgeProps {
   status: ArtworkStatus
