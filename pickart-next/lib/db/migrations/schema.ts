@@ -1,4 +1,4 @@
-import { pgTable, char, text, timestamp, foreignKey, unique, pgPolicy, uuid, boolean, numeric, integer, check, primaryKey, pgView, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, char, text, timestamp, foreignKey, pgPolicy, uuid, boolean, unique, numeric, integer, check, primaryKey, pgView, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 export const artistType = pgEnum("artist_type", ['artist', 'agent'])
@@ -22,13 +22,65 @@ export const propertyTypes = pgTable("property_types", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 });
 
+export const artists = pgTable("artists", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	artistType: artistType("artist_type").notNull(),
+	displayName: text("display_name").notNull(),
+	bankAccountId: uuid("bank_account_id"),
+	contractSigned: boolean("contract_signed").default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	userId: uuid("user_id"),
+}, (table) => [
+	foreignKey({
+			columns: [table.bankAccountId],
+			foreignColumns: [bankAccounts.id],
+			name: "artists_bank_account_id_fkey"
+		}),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "artists_user_id_fkey"
+		}),
+	pgPolicy("artist_select_own", { as: "permissive", for: "select", to: ["public"], using: sql`((user_id = auth.uid()) OR (EXISTS ( SELECT 1
+   FROM users
+  WHERE ((users.id = auth.uid()) AND (users.role = 'admin'::user_role)))))` }),
+	pgPolicy("artist_update_own", { as: "permissive", for: "update", to: ["public"] }),
+]);
+
+export const hosts = pgTable("hosts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	hostType: hostType("host_type").notNull(),
+	businessName: text("business_name"),
+	bankAccountId: uuid("bank_account_id"),
+	contractSigned: boolean("contract_signed").default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	userId: uuid("user_id"),
+}, (table) => [
+	foreignKey({
+			columns: [table.bankAccountId],
+			foreignColumns: [bankAccounts.id],
+			name: "hosts_bank_account_id_fkey"
+		}),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "hosts_user_id_fkey"
+		}),
+	pgPolicy("host_select_own", { as: "permissive", for: "select", to: ["public"], using: sql`((user_id = auth.uid()) OR (EXISTS ( SELECT 1
+   FROM users
+  WHERE ((users.id = auth.uid()) AND (users.role = 'admin'::user_role)))))` }),
+	pgPolicy("host_update_own", { as: "permissive", for: "update", to: ["public"] }),
+]);
+
 export const users = pgTable("users", {
 	id: uuid().primaryKey().notNull(),
 	firstName: text("first_name").notNull(),
 	lastName: text("last_name").notNull(),
 	email: text().notNull(),
-	phone: text().notNull(),
-	address: text().notNull(),
+	phone: text(),
+	address: text(),
 	countryCode: char("country_code", { length: 2 }),
 	role: userRole().notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
@@ -45,40 +97,6 @@ export const users = pgTable("users", {
   WHERE ((users_1.id = auth.uid()) AND (users_1.role = 'admin'::user_role))))` }),
 	pgPolicy("user_select_own", { as: "permissive", for: "select", to: ["public"] }),
 	pgPolicy("user_update_own", { as: "permissive", for: "update", to: ["public"] }),
-]);
-
-export const artists = pgTable("artists", {
-	id: uuid().primaryKey().defaultRandom().notNull(),
-	userId: uuid("user_id").references(() => users.id),
-	artistType: artistType("artist_type").notNull(),
-	displayName: text("display_name").notNull(),
-	bankAccountId: uuid("bank_account_id"),
-	contractSigned: boolean("contract_signed").default(false).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.bankAccountId],
-			foreignColumns: [bankAccounts.id],
-			name: "artists_bank_account_id_fkey"
-		}),
-]);
-
-export const hosts = pgTable("hosts", {
-	id: uuid().primaryKey().defaultRandom().notNull(),
-	userId: uuid("user_id").references(() => users.id),
-	hostType: hostType("host_type").notNull(),
-	businessName: text("business_name"),
-	bankAccountId: uuid("bank_account_id"),
-	contractSigned: boolean("contract_signed").default(false).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.bankAccountId],
-			foreignColumns: [bankAccounts.id],
-			name: "hosts_bank_account_id_fkey"
-		}),
 ]);
 
 export const bankAccounts = pgTable("bank_accounts", {
@@ -117,7 +135,7 @@ export const properties = pgTable("properties", {
 	sizeSqm: numeric("size_sqm", { precision: 10, scale:  2 }),
 	totalFloors: integer("total_floors"),
 	totalRooms: integer("total_rooms"),
-	ownerId: uuid("owner_id").references(() => hosts.id),
+	ownerId: uuid("owner_id"),
 	contactPhone: text("contact_phone").notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
@@ -128,14 +146,22 @@ export const properties = pgTable("properties", {
 			name: "properties_country_code_fkey"
 		}),
 	foreignKey({
+			columns: [table.ownerId],
+			foreignColumns: [hosts.id],
+			name: "properties_owner_id_fkey"
+		}),
+	foreignKey({
 			columns: [table.propertyType],
 			foreignColumns: [propertyTypes.name],
 			name: "properties_property_type_fkey"
 		}),
 	unique("properties_property_id_key").on(table.propertyId),
-	pgPolicy("host_property_select", { as: "permissive", for: "select", to: ["public"], using: sql`((owner_id = auth.uid()) OR (EXISTS ( SELECT 1
-   FROM property_admins
-  WHERE ((property_admins.property_id = properties.id) AND (property_admins.user_id = auth.uid())))) OR (EXISTS ( SELECT 1
+	pgPolicy("host_property_select", { as: "permissive", for: "select", to: ["public"], using: sql`((EXISTS ( SELECT 1
+   FROM hosts h
+  WHERE ((h.id = properties.owner_id) AND (h.user_id = auth.uid())))) OR (EXISTS ( SELECT 1
+   FROM (property_admins pa
+     JOIN hosts h ON ((h.id = pa.user_id)))
+  WHERE ((pa.property_id = properties.id) AND (h.user_id = auth.uid())))) OR (EXISTS ( SELECT 1
    FROM users
   WHERE ((users.id = auth.uid()) AND (users.role = 'admin'::user_role)))))` }),
 ]);
@@ -184,10 +210,12 @@ export const spots = pgTable("spots", {
 		}).onDelete("cascade"),
 	unique("spots_spot_id_key").on(table.spotId),
 	pgPolicy("host_spot_select", { as: "permissive", for: "select", to: ["public"], using: sql`((EXISTS ( SELECT 1
-   FROM properties
-  WHERE ((properties.id = spots.property_id) AND ((properties.owner_id = auth.uid()) OR (EXISTS ( SELECT 1
-           FROM property_admins
-          WHERE ((property_admins.property_id = properties.id) AND (property_admins.user_id = auth.uid())))))))) OR (EXISTS ( SELECT 1
+   FROM (properties p
+     JOIN hosts h ON ((h.id = p.owner_id)))
+  WHERE ((p.id = spots.property_id) AND ((h.user_id = auth.uid()) OR (EXISTS ( SELECT 1
+           FROM (property_admins pa
+             JOIN hosts h2 ON ((h2.id = pa.user_id)))
+          WHERE ((pa.property_id = p.id) AND (h2.user_id = auth.uid())))))))) OR (EXISTS ( SELECT 1
    FROM users
   WHERE ((users.id = auth.uid()) AND (users.role = 'admin'::user_role)))))` }),
 ]);
@@ -301,6 +329,7 @@ export const registrationApprovals = pgTable("registration_approvals", {
 	notes: text(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	requestedRole: userRole("requested_role").notNull(),
 }, (table) => [
 	foreignKey({
 			columns: [table.approvedBy],
@@ -331,6 +360,14 @@ export const propertyAdmins = pgTable("property_admins", {
 			name: "property_admins_user_id_fkey"
 		}).onDelete("cascade"),
 	primaryKey({ columns: [table.propertyId, table.userId], name: "property_admins_pkey"}),
+	pgPolicy("property_admin_select", { as: "permissive", for: "select", to: ["public"], using: sql`((EXISTS ( SELECT 1
+   FROM hosts h
+  WHERE ((h.id = property_admins.user_id) AND (h.user_id = auth.uid())))) OR (EXISTS ( SELECT 1
+   FROM (hosts h
+     JOIN properties p ON ((p.owner_id = h.id)))
+  WHERE ((p.id = property_admins.property_id) AND (h.user_id = auth.uid())))) OR (EXISTS ( SELECT 1
+   FROM users
+  WHERE ((users.id = auth.uid()) AND (users.role = 'admin'::user_role)))))` }),
 ]);
 export const artworkDetails = pgView("artwork_details", {	id: uuid(),
 	artworkId: text("artwork_id"),
